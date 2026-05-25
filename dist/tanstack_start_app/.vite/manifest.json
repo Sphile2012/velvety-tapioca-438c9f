@@ -1,0 +1,72 @@
+{
+  "C:/Users/Phumeh/OneDrive/LibrarySystem16385918/Attachments/Videos/Screen Recordings/velvety-tapioca-438c9f/src/styles.css": {
+    "file": "assets/styles-RwrV72Hs.css",
+    "src": "C:/Users/Phumeh/OneDrive/LibrarySystem16385918/Attachments/Videos/Screen Recordings/velvety-tapioca-438c9f/src/styles.css"
+  },
+  "_server-Zq6DQ_rR.js": {
+    "file": "assets/server-Zq6DQ_rR.js",
+    "name": "server",
+    "isDynamicEntry": true,
+    "dynamicImports": [
+      "tanstack-start-manifest:v",
+      "src/router.tsx",
+      "src/start.ts",
+      "node_modules/@tanstack/start-server-core/dist/esm/empty-plugin-adapters.js"
+    ]
+  },
+  "_worker-entry-Dlrx3z_g.js": {
+    "file": "assets/worker-entry-Dlrx3z_g.js",
+    "name": "worker-entry",
+    "dynamicImports": [
+      "_server-Zq6DQ_rR.js"
+    ]
+  },
+  "node_modules/@tanstack/start-server-core/dist/esm/empty-plugin-adapters.js": {
+    "file": "assets/empty-plugin-adapters-BFgPZ6_d.js",
+    "name": "empty-plugin-adapters",
+    "src": "node_modules/@tanstack/start-server-core/dist/esm/empty-plugin-adapters.js",
+    "isDynamicEntry": true
+  },
+  "src/assets/hero-shield.jpg": {
+    "file": "assets/hero-shield-DpAIz2Bi.jpg",
+    "src": "src/assets/hero-shield.jpg"
+  },
+  "src/router.tsx": {
+    "file": "assets/router-BT-_OpBR.js",
+    "name": "router",
+    "src": "src/router.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_server-Zq6DQ_rR.js"
+    ],
+    "assets": [
+      "assets/hero-shield-DpAIz2Bi.jpg",
+      "assets/styles-RwrV72Hs.css"
+    ]
+  },
+  "src/start.ts": {
+    "file": "assets/start-D0vPD_Xs.js",
+    "name": "start",
+    "src": "src/start.ts",
+    "isDynamicEntry": true,
+    "imports": [
+      "_server-Zq6DQ_rR.js",
+      "_worker-entry-Dlrx3z_g.js"
+    ]
+  },
+  "tanstack-start-manifest:v": {
+    "file": "assets/_tanstack-start-manifest_v-DaEwjRFE.js",
+    "name": "_tanstack-start-manifest_v",
+    "src": "tanstack-start-manifest:v",
+    "isDynamicEntry": true
+  },
+  "virtual:cloudflare/worker-entry": {
+    "file": "index.js",
+    "name": "index",
+    "src": "virtual:cloudflare/worker-entry",
+    "isEntry": true,
+    "imports": [
+      "_worker-entry-Dlrx3z_g.js"
+    ]
+  }
+}

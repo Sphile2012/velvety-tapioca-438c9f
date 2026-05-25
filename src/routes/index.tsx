@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import heroShield from "@/assets/hero-shield.jpg";
 import {
   ShieldCheck,
@@ -27,15 +27,19 @@ import {
   FileText,
   Gavel,
 } from "lucide-react";
+import { AIGuide } from "@/components/ai-guide";
+import { useAuth } from "@/contexts/auth-context";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
 function Index() {
+  const { isAuthenticated, user, logout } = useAuth();
+
   return (
     <div className="min-h-screen text-foreground">
-      <Nav />
+      <Nav isAuthenticated={isAuthenticated} user={user} onLogout={logout} />
       <Hero />
       <Pillars />
       <LiveDashboard />
@@ -46,11 +50,12 @@ function Index() {
       <EmergencyBand />
       <Ethics />
       <Footer />
+      <AIGuide />
     </div>
   );
 }
 
-function Nav() {
+function Nav({ isAuthenticated, user, onLogout }: { isAuthenticated: boolean; user: any; onLogout: () => void }) {
   return (
     <header className="sticky top-0 z-50 glass">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
@@ -80,9 +85,36 @@ function Nav() {
             Ethics
           </a>
         </nav>
-        <button className="rounded-full bg-shield px-4 py-2 text-sm font-medium text-primary-foreground shadow-glow transition hover:opacity-90">
-          Open vault
-        </button>
+        <div className="flex items-center gap-3">
+          {isAuthenticated ? (
+            <>
+              <span className="hidden text-sm text-muted-foreground sm:inline">
+                Hi, {user?.name || "User"}
+              </span>
+              <button
+                onClick={onLogout}
+                className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition hover:bg-accent"
+              >
+                Sign out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="hidden rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition hover:bg-accent sm:inline-flex"
+              >
+                Sign in
+              </Link>
+              <Link
+                to="/signup"
+                className="rounded-full bg-shield px-4 py-2 text-sm font-medium text-primary-foreground shadow-glow transition hover:opacity-90"
+              >
+                Get started
+              </Link>
+            </>
+          )}
+        </div>
       </div>
     </header>
   );
@@ -405,14 +437,12 @@ function ConsentCard() {
               <div className="text-xs text-muted-foreground">{g.scope}</div>
             </div>
             <span
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-                g.on ? "bg-shield" : "bg-secondary"
-              }`}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${g.on ? "bg-shield" : "bg-secondary"
+                }`}
             >
               <span
-                className={`absolute h-4 w-4 rounded-full bg-background transition ${
-                  g.on ? "right-1" : "left-1"
-                }`}
+                className={`absolute h-4 w-4 rounded-full bg-background transition ${g.on ? "right-1" : "left-1"
+                  }`}
               />
             </span>
           </li>
