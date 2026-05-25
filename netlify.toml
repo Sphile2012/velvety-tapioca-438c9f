@@ -1,0 +1,27 @@
+[build]
+  command = "npm ci && npm run build"
+  publish = "dist/client"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[dev]
+  command = "npm run dev"
+  port = 3000
+  targetPort = 3000
+
+# Serve static assets directly
+[[redirects]]
+  from = "/assets/*"
+  to = "/assets/:splat"
+  status = 200
+  force = true
+
+# Route all other requests to the SSR function
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/ssr"
+  status = 200
+
+[functions]
+  node_bundler = "esbuild"
