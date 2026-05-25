@@ -58,14 +58,14 @@ function Index() {
 function Nav({ isAuthenticated, user, onLogout }: { isAuthenticated: boolean; user: any; onLogout: () => void }) {
   return (
     <header className="sticky top-0 z-50 glass">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
         <div className="flex items-center gap-2">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-shield shadow-glow">
-            <ShieldCheck className="h-5 w-5 text-primary-foreground" />
+          <div className="grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-xl bg-shield shadow-glow">
+            <ShieldCheck className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
           </div>
-          <span className="text-lg font-semibold tracking-tight">Aegis Health</span>
+          <span className="text-base sm:text-lg font-semibold tracking-tight">Aegis Health</span>
         </div>
-        <nav className="hidden gap-8 text-sm text-muted-foreground md:flex">
+        <nav className="hidden lg:flex gap-6 sm:gap-8 text-xs sm:text-sm text-muted-foreground">
           <a href="#pillars" className="hover:text-foreground">
             Platform
           </a>
@@ -85,15 +85,15 @@ function Nav({ isAuthenticated, user, onLogout }: { isAuthenticated: boolean; us
             Ethics
           </a>
         </nav>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {isAuthenticated ? (
             <>
-              <span className="hidden text-sm text-muted-foreground sm:inline">
+              <span className="hidden text-xs sm:text-sm text-muted-foreground sm:inline">
                 Hi, {user?.name || "User"}
               </span>
               <button
                 onClick={onLogout}
-                className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition hover:bg-accent"
+                className="rounded-full border border-border bg-card px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-foreground transition hover:bg-accent"
               >
                 Sign out
               </button>
@@ -102,13 +102,13 @@ function Nav({ isAuthenticated, user, onLogout }: { isAuthenticated: boolean; us
             <>
               <Link
                 to="/login"
-                className="hidden rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition hover:bg-accent sm:inline-flex"
+                className="hidden rounded-full border border-border bg-card px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-foreground transition hover:bg-accent sm:inline-flex"
               >
                 Sign in
               </Link>
               <Link
                 to="/signup"
-                className="rounded-full bg-shield px-4 py-2 text-sm font-medium text-primary-foreground shadow-glow transition hover:opacity-90"
+                className="rounded-full bg-shield px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-primary-foreground shadow-glow transition hover:opacity-90"
               >
                 Get started
               </Link>

@@ -78,21 +78,21 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-secondary/20 px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-secondary/20 px-4 py-8 sm:py-12">
       <div className="w-full max-w-md">
         {/* Logo and Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-shield shadow-glow mb-4">
-            <ShieldCheck className="w-8 h-8 text-primary-foreground" />
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-shield shadow-glow mb-4">
+            <ShieldCheck className="w-7 h-7 sm:w-8 sm:h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground">Welcome back</h1>
-          <p className="mt-2 text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Welcome back</h1>
+          <p className="mt-2 text-sm sm:text-base text-muted-foreground">
             Sign in to access your Aegis Health dashboard
           </p>
         </div>
 
         {/* Form Card */}
-        <div className="rounded-3xl border border-border bg-card/80 backdrop-blur-sm p-8 shadow-card">
+        <div className="rounded-2xl sm:rounded-3xl border border-border bg-card/80 backdrop-blur-sm p-6 sm:p-8 shadow-card">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email Field */}
             <div className="space-y-2">
@@ -107,9 +107,8 @@ function Login() {
                   placeholder="john@example.com"
                   value={formData.email}
                   onChange={(e) => handleChange("email", e.target.value)}
-                  className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-background text-foreground placeholder:text-muted-foreground/50 transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-                    errors.email ? "border-destructive" : "border-border"
-                  }`}
+                  className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-background text-foreground placeholder:text-muted-foreground/50 transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${errors.email ? "border-destructive" : "border-border"
+                    }`}
                   disabled={isLoading}
                 />
               </div>
@@ -133,9 +132,8 @@ function Login() {
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={(e) => handleChange("password", e.target.value)}
-                  className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-background text-foreground placeholder:text-muted-foreground/50 transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-                    errors.password ? "border-destructive" : "border-border"
-                  }`}
+                  className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-background text-foreground placeholder:text-muted-foreground/50 transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${errors.password ? "border-destructive" : "border-border"
+                    }`}
                   disabled={isLoading}
                 />
               </div>
@@ -196,7 +194,7 @@ function Login() {
         </div>
 
         {/* Security Notice */}
-        <div className="mt-6 text-center">
+        <div className="mt-4 sm:mt-6 text-center">
           <p className="text-xs text-muted-foreground">
             Protected by enterprise-grade security with end-to-end encryption
           </p>

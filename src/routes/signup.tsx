@@ -85,21 +85,21 @@ function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-secondary/20 px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-secondary/20 px-4 py-8 sm:py-12">
       <div className="w-full max-w-md">
         {/* Logo and Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-shield shadow-glow mb-4">
-            <ShieldCheck className="w-8 h-8 text-primary-foreground" />
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-shield shadow-glow mb-4">
+            <ShieldCheck className="w-7 h-7 sm:w-8 sm:h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground">Create your account</h1>
-          <p className="mt-2 text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Create your account</h1>
+          <p className="mt-2 text-sm sm:text-base text-muted-foreground">
             Join Aegis Health and start your wellness journey
           </p>
         </div>
 
         {/* Form Card */}
-        <div className="rounded-3xl border border-border bg-card/80 backdrop-blur-sm p-8 shadow-card">
+        <div className="rounded-2xl sm:rounded-3xl border border-border bg-card/80 backdrop-blur-sm p-6 sm:p-8 shadow-card">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name Field */}
             <div className="space-y-2">
@@ -114,9 +114,8 @@ function Signup() {
                   placeholder="John Doe"
                   value={formData.name}
                   onChange={(e) => handleChange("name", e.target.value)}
-                  className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-background text-foreground placeholder:text-muted-foreground/50 transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-                    errors.name ? "border-destructive" : "border-border"
-                  }`}
+                  className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-background text-foreground placeholder:text-muted-foreground/50 transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${errors.name ? "border-destructive" : "border-border"
+                    }`}
                   disabled={isLoading}
                 />
               </div>
@@ -140,9 +139,8 @@ function Signup() {
                   placeholder="john@example.com"
                   value={formData.email}
                   onChange={(e) => handleChange("email", e.target.value)}
-                  className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-background text-foreground placeholder:text-muted-foreground/50 transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-                    errors.email ? "border-destructive" : "border-border"
-                  }`}
+                  className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-background text-foreground placeholder:text-muted-foreground/50 transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${errors.email ? "border-destructive" : "border-border"
+                    }`}
                   disabled={isLoading}
                 />
               </div>
@@ -166,9 +164,8 @@ function Signup() {
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={(e) => handleChange("password", e.target.value)}
-                  className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-background text-foreground placeholder:text-muted-foreground/50 transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-                    errors.password ? "border-destructive" : "border-border"
-                  }`}
+                  className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-background text-foreground placeholder:text-muted-foreground/50 transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${errors.password ? "border-destructive" : "border-border"
+                    }`}
                   disabled={isLoading}
                 />
               </div>
@@ -223,13 +220,13 @@ function Signup() {
         </div>
 
         {/* Benefits */}
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+        <div className="mt-6 sm:mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-center">
           {[
             "AI-powered insights",
             "Secure data storage",
             "Reward system",
           ].map((benefit) => (
-            <div key={benefit} className="text-sm text-muted-foreground">
+            <div key={benefit} className="text-xs sm:text-sm text-muted-foreground">
               {benefit}
             </div>
           ))}
