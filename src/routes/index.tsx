@@ -873,9 +873,9 @@ function Ethics() {
           people actually use it, and ethical enough to set the standard.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <a href="mailto:pilot@aegis.health" className="inline-flex items-center gap-2 rounded-full bg-shield px-6 py-3 font-medium text-primary-foreground shadow-glow">
+          <Link to="/contact" className="inline-flex items-center gap-2 rounded-full bg-shield px-6 py-3 font-medium text-primary-foreground shadow-glow">
             Request a pilot <ArrowRight className="h-4 w-4" />
-          </a>
+          </Link>
           <a href="#ethics" className="rounded-full border border-border bg-card px-6 py-3 font-medium hover:bg-secondary">
             Read the whitepaper
           </a>
