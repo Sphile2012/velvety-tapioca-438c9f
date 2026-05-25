@@ -106,6 +106,9 @@ function Nav({ isAuthenticated, user, onLogout }: { isAuthenticated: boolean; us
           </a>
         </nav>
         <div className="flex items-center gap-2 sm:gap-3">
+          <a href="#dashboard" className="rounded-full bg-shield px-4 py-2 text-sm font-medium text-primary-foreground shadow-glow transition hover:opacity-90">
+            Open vault
+          </a>
           {isAuthenticated ? (
             <>
               <span className="hidden text-xs sm:text-sm text-muted-foreground sm:inline">
@@ -159,12 +162,12 @@ function Hero() {
             intelligence.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <button className="inline-flex items-center gap-2 rounded-full bg-shield px-6 py-3 font-medium text-primary-foreground shadow-glow">
+            <a href="#dashboard" className="inline-flex items-center gap-2 rounded-full bg-shield px-6 py-3 font-medium text-primary-foreground shadow-glow">
               Activate my shield <ArrowRight className="h-4 w-4" />
-            </button>
-            <button className="rounded-full border border-border bg-card/60 px-6 py-3 font-medium text-foreground hover:bg-card">
+            </a>
+            <a href="#pillars" className="rounded-full border border-border bg-card/60 px-6 py-3 font-medium text-foreground hover:bg-card">
               See how it works
-            </button>
+            </a>
           </div>
           <div className="mt-10 flex gap-8 text-sm">
             {[
@@ -870,12 +873,12 @@ function Ethics() {
           people actually use it, and ethical enough to set the standard.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <button className="inline-flex items-center gap-2 rounded-full bg-shield px-6 py-3 font-medium text-primary-foreground shadow-glow">
+          <a href="mailto:pilot@aegis.health" className="inline-flex items-center gap-2 rounded-full bg-shield px-6 py-3 font-medium text-primary-foreground shadow-glow">
             Request a pilot <ArrowRight className="h-4 w-4" />
-          </button>
-          <button className="rounded-full border border-border bg-card px-6 py-3 font-medium hover:bg-secondary">
+          </a>
+          <a href="#ethics" className="rounded-full border border-border bg-card px-6 py-3 font-medium hover:bg-secondary">
             Read the whitepaper
-          </button>
+          </a>
         </div>
       </div>
     </section>
