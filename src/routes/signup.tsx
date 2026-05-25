@@ -61,7 +61,8 @@ function Signup() {
         toast.success("Account created successfully!", {
           description: "Welcome to Aegis Health",
         });
-        navigate({ to: "/" });
+        // Redirect to onboarding
+        navigate({ to: "/onboarding" });
       } else {
         toast.error("Signup failed", {
           description: result.error || "An error occurred",

@@ -1,15 +1,18 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageSquare, Send, X, Sparkles, Minimize2, Maximize2 } from "lucide-react";
-import { serverSendChatMessage, type ChatMessage } from "@/lib/api";
+import { serverGetContextAwareResponse, serverGetHealthData, type ChatMessage, type HealthData, type BehaviorPattern, type LifestyleScore, type RewardPoints } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/auth-context";
 
 export function AIGuide() {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [userContext, setUserContext] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -19,6 +22,49 @@ export function AIGuide() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    // Load user context when component mounts
+    const loadUserContext = async () => {
+      if (user) {
+        try {
+          const healthData = await serverGetHealthData(user.id);
+          setUserContext({
+            healthData,
+            // Simulated behavior pattern and lifestyle score
+            behaviorPattern: {
+              motivationLevel: "medium",
+              psychologyProfile: {
+                achievementOriented: true,
+                socialMotivated: false,
+                healthConscious: true,
+                rewardSensitive: true,
+              },
+            },
+            lifestyleScore: {
+              overall: 72,
+              breakdown: {
+                sleep: 85,
+                activity: 78,
+                stress: 65,
+                nutrition: 70,
+                spending: 68,
+                socialConnection: 65,
+              },
+            },
+            rewardPoints: {
+              availablePoints: 8500,
+              tier: "gold",
+              streakDays: 14,
+            },
+          });
+        } catch (error) {
+          console.error("Failed to load user context:", error);
+        }
+      }
+    };
+    loadUserContext();
+  }, [user]);
 
   const handleSendMessage = async (messageText: string) => {
     if (!messageText.trim()) return;
@@ -36,7 +82,7 @@ export function AIGuide() {
     setIsLoading(true);
 
     try {
-      const response = await serverSendChatMessage(messageText, messages);
+      const response = await serverGetContextAwareResponse(messageText, userContext, messages);
       setMessages((prev) => [...prev, response.message]);
       setSuggestions(response.suggestions || []);
     } catch (error) {

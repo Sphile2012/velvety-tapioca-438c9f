@@ -28,6 +28,9 @@ import {
   Gavel,
 } from "lucide-react";
 import { AIGuide } from "@/components/ai-guide";
+import { LifestyleScore } from "@/components/lifestyle-score";
+import { RewardPoints } from "@/components/reward-points";
+import { PredictiveInsights } from "@/components/predictive-insights";
 import { useAuth } from "@/contexts/auth-context";
 
 export const Route = createFileRoute("/")({
@@ -43,6 +46,23 @@ function Index() {
       <Hero />
       <Pillars />
       <LiveDashboard />
+
+      {/* New Features Section */}
+      {isAuthenticated && (
+        <section className="py-20 px-6">
+          <div className="mx-auto max-w-7xl">
+            <h2 className="text-3xl font-bold text-foreground mb-12 text-center">
+              Your Personalized Wellness Dashboard
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <LifestyleScore />
+              <RewardPoints />
+              <PredictiveInsights />
+            </div>
+          </div>
+        </section>
+      )}
+
       <CompetitiveEdge />
       <BehaviorEngine />
       <FraudDetection />
