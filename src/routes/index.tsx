@@ -31,6 +31,7 @@ import { AIGuide } from "@/components/ai-guide";
 import { LifestyleScore } from "@/components/lifestyle-score";
 import { RewardPoints } from "@/components/reward-points";
 import { PredictiveInsights } from "@/components/predictive-insights";
+import { CommunityIntelligence } from "@/components/community-intelligence";
 import { useAuth } from "@/contexts/auth-context";
 
 export const Route = createFileRoute("/")({
@@ -50,7 +51,7 @@ function Index() {
       {/* New Features Section */}
       {isAuthenticated && (
         <section className="py-20 px-6">
-          <div className="mx-auto max-w-7xl">
+          <div className="mx-auto max-w-7xl space-y-12">
             <h2 className="text-3xl font-bold text-foreground mb-12 text-center">
               Your Personalized Wellness Dashboard
             </h2>
@@ -58,6 +59,11 @@ function Index() {
               <LifestyleScore />
               <RewardPoints />
               <PredictiveInsights />
+            </div>
+
+            {/* Community Intelligence Section */}
+            <div className="pt-8 border-t">
+              <CommunityIntelligence />
             </div>
           </div>
         </section>

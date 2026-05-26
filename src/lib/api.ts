@@ -1412,6 +1412,145 @@ export async function serverGetConnectedDevices(userId: string) {
   return await getConnectedDevices(userId);
 }
 
+// Community-Level Intelligence Interfaces (Theme 1: AI for Safer Communities)
+export interface CommunityHealthInsight {
+  id: string;
+  region: string;
+  timestamp: string;
+  insightType: "public_health_risk" | "stress_trend" | "outbreak" | "environmental_hazard" | "accident_hotspot" | "lifestyle_disease_pattern";
+  severity: "low" | "moderate" | "high" | "critical";
+  description: string;
+  affectedPopulation: number;
+  confidence: number;
+  recommendedActions: string[];
+  dataPoints: number;
+  anonymizedData: boolean;
+}
+
+export interface CommunityHealthMetrics {
+  region: string;
+  timestamp: string;
+  averageStressLevel: number;
+  averageSleepQuality: number;
+  averageActivityLevel: number;
+  averageMentalHealthScore: number;
+  chronicDiseasePrevalence: number;
+  emergencyIncidentRate: number;
+  environmentalRiskIndex: number;
+  healthcareAccessScore: number;
+  trendDirection: "improving" | "stable" | "declining";
+}
+
+export interface PublicHealthAlert {
+  id: string;
+  alertType: "disease_outbreak" | "environmental_hazard" | "mental_health_crisis" | "emergency_surge";
+  region: string;
+  severity: "low" | "moderate" | "high" | "critical";
+  issuedAt: string;
+  expiresAt: string;
+  description: string;
+  affectedAreas: string[];
+  recommendedActions: string[];
+  resources: { name: string; contact: string; type: string }[];
+}
+
+// Community-Level Intelligence Functions
+export async function analyzeCommunityHealthMetrics(region: string): Promise<CommunityHealthMetrics> {
+  return {
+    region,
+    timestamp: new Date().toISOString(),
+    averageStressLevel: 45,
+    averageSleepQuality: 72,
+    averageActivityLevel: 68,
+    averageMentalHealthScore: 70,
+    chronicDiseasePrevalence: 25,
+    emergencyIncidentRate: 12,
+    environmentalRiskIndex: 55,
+    healthcareAccessScore: 75,
+    trendDirection: "stable",
+  };
+}
+
+export async function generateCommunityHealthInsights(region: string): Promise<CommunityHealthInsight[]> {
+  return [
+    {
+      id: crypto.randomUUID(),
+      region,
+      timestamp: new Date().toISOString(),
+      insightType: "stress_trend",
+      severity: "moderate",
+      description: "Rising stress levels detected in the region, potentially linked to economic factors",
+      affectedPopulation: 15000,
+      confidence: 78,
+      recommendedActions: ["Increase mental health resources", "Community stress management programs", "Workplace wellness initiatives"],
+      dataPoints: 5000,
+      anonymizedData: true,
+    },
+    {
+      id: crypto.randomUUID(),
+      region,
+      timestamp: new Date().toISOString(),
+      insightType: "lifestyle_disease_pattern",
+      severity: "high",
+      description: "Increasing trend in sedentary behavior and poor nutrition patterns",
+      affectedPopulation: 22000,
+      confidence: 82,
+      recommendedActions: ["Public fitness campaigns", "Nutrition education programs", "Active transport infrastructure"],
+      dataPoints: 7500,
+      anonymizedData: true,
+    },
+  ];
+}
+
+export async function issuePublicHealthAlert(alert: Omit<PublicHealthAlert, "id" | "issuedAt">): Promise<PublicHealthAlert> {
+  return {
+    id: crypto.randomUUID(),
+    issuedAt: new Date().toISOString(),
+    ...alert,
+  };
+}
+
+export async function getActivePublicHealthAlerts(region: string): Promise<PublicHealthAlert[]> {
+  return [
+    {
+      id: crypto.randomUUID(),
+      alertType: "environmental_hazard",
+      region,
+      severity: "moderate",
+      issuedAt: new Date(Date.now() - 86400000).toISOString(),
+      expiresAt: new Date(Date.now() + 172800000).toISOString(),
+      description: "Air quality index elevated due to seasonal factors",
+      affectedAreas: ["Central District", "Industrial Zone"],
+      recommendedActions: ["Limit outdoor activities", "Use air purifiers", "Monitor symptoms"],
+      resources: [
+        { name: "Air Quality Hotline", contact: "0800-AIR-QUAL", type: "hotline" },
+        { name: "Health Department", contact: "info@health.gov", type: "email" },
+      ],
+    },
+  ];
+}
+
+// Server functions for Community Intelligence
+export async function serverAnalyzeCommunityHealthMetrics(region: string) {
+  "use server";
+  return await analyzeCommunityHealthMetrics(region);
+}
+
+export async function serverGenerateCommunityHealthInsights(region: string) {
+  "use server";
+  return await generateCommunityHealthInsights(region);
+}
+
+export async function serverIssuePublicHealthAlert(alert: Omit<PublicHealthAlert, "id" | "issuedAt">) {
+  "use server";
+  return await issuePublicHealthAlert(alert);
+}
+
+export async function serverGetActivePublicHealthAlerts(region: string) {
+  "use server";
+  return await getActivePublicHealthAlerts(region);
+}
+
 export async function serverGeneratePersonalizedPlan(profile: UserProfile) {
   "use server";
   return await generatePersonalizedPlan(profile);
