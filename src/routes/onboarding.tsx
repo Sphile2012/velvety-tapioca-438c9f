@@ -1,7 +1,22 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { ShieldCheck, ArrowRight, User, Activity, Utensils, Heart, Watch, CheckCircle, ChevronRight, ChevronLeft } from "lucide-react";
-import { serverSaveUserProfile, serverSaveOnboardingProgress, serverGeneratePersonalizedPlan, serverConnectDevice, serverGetConnectedDevices, type UserProfile, type ConnectedDevice } from "@/lib/api";
+import { ShieldCheck, ArrowRight, User, Activity, Utensils, Heart, Watch, CheckCircle, ChevronRight, ChevronLeft, Bluetooth, QrCode, Smartphone, Battery } from "lucide-react";
+import {
+  serverSaveUserProfile,
+  serverSaveOnboardingProgress,
+  serverGeneratePersonalizedPlan,
+  serverConnectDevice,
+  serverGetConnectedDevices,
+  serverScanBluetoothDevices,
+  serverConnectBluetoothDevice,
+  serverScanQRCode,
+  serverConnectViaQRCode,
+  serverConnectCellphoneApp,
+  type UserProfile,
+  type ConnectedDevice,
+  type BluetoothDevice,
+  type QRCodeResult
+} from "@/lib/api";
 import { useAuth } from "@/contexts/auth-context";
 import { toast } from "sonner";
 
@@ -164,6 +179,70 @@ function Onboarding() {
       toast.success("Device connected successfully!");
     } catch (error) {
       toast.error("Failed to connect device");
+    }
+  };
+
+  const handleBluetoothConnection = async () => {
+    if (!user) return;
+
+    try {
+      toast.loading("Scanning for Bluetooth devices...");
+      const devices = await serverScanBluetoothDevices();
+
+      if (devices.length === 0) {
+        toast.dismiss();
+        toast.error("No Bluetooth devices found");
+        return;
+      }
+
+      toast.dismiss();
+      // For demo, connect to the first device
+      const firstDevice = devices[0];
+      const connectedDevice = await serverConnectBluetoothDevice(firstDevice.id, user.id);
+      setConnectedDevices([...connectedDevices, connectedDevice]);
+      toast.success(`Connected to ${connectedDevice.deviceName} via Bluetooth`);
+    } catch (error) {
+      toast.dismiss();
+      toast.error("Failed to connect via Bluetooth");
+    }
+  };
+
+  const handleQRCodeConnection = async () => {
+    if (!user) return;
+
+    try {
+      toast.loading("Scanning QR code...");
+      const qrResult = await serverScanQRCode();
+      toast.dismiss();
+
+      const connectedDevice = await serverConnectViaQRCode(qrResult, user.id);
+      setConnectedDevices([...connectedDevices, connectedDevice]);
+      toast.success(`Connected to ${connectedDevice.deviceName} via QR code`);
+    } catch (error) {
+      toast.dismiss();
+      toast.error("Failed to connect via QR code");
+    }
+  };
+
+  const handleCellphoneConnection = async () => {
+    if (!user) return;
+
+    try {
+      toast.loading("Connecting via cellphone app...");
+      const phoneNumber = prompt("Enter your cellphone number for app connection:");
+      toast.dismiss();
+
+      if (!phoneNumber) {
+        toast.error("Phone number is required");
+        return;
+      }
+
+      const connectedDevice = await serverConnectCellphoneApp(phoneNumber, user.id);
+      setConnectedDevices([...connectedDevices, connectedDevice]);
+      toast.success(`Connected to ${connectedDevice.deviceName} via cellphone app`);
+    } catch (error) {
+      toast.dismiss();
+      toast.error("Failed to connect via cellphone app");
     }
   };
 
@@ -440,17 +519,55 @@ function Onboarding() {
         return (
           <div className="space-y-6">
             <h3 className="text-2xl font-bold text-foreground">Connect Devices</h3>
-            <p className="text-muted-foreground">Connect your wearable devices for automatic data collection.</p>
+            <p className="text-muted-foreground">Choose how you'd like to connect your device for automatic data collection.</p>
 
             <div className="space-y-4">
-              <button
-                onClick={handleConnectDevice}
-                className="w-full flex items-center justify-center gap-3 p-4 rounded-xl border-2 border-dashed border-border hover:border-primary/50 hover:bg-accent/50 transition-all"
-              >
-                <Watch className="w-6 h-6 text-primary" />
-                <span className="text-foreground font-medium">Connect New Device</span>
-              </button>
+              {/* Connection Method Options */}
+              <div className="grid gap-4 md:grid-cols-3">
+                {/* Bluetooth Option */}
+                <button
+                  onClick={() => handleBluetoothConnection()}
+                  className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-accent/50 transition-all group"
+                >
+                  <div className="p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-all">
+                    <Bluetooth className="w-8 h-8 text-primary" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-foreground font-medium">Bluetooth</p>
+                    <p className="text-xs text-muted-foreground mt-1">Pair nearby devices</p>
+                  </div>
+                </button>
 
+                {/* QR Code Option */}
+                <button
+                  onClick={() => handleQRCodeConnection()}
+                  className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-accent/50 transition-all group"
+                >
+                  <div className="p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-all">
+                    <QrCode className="w-8 h-8 text-primary" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-foreground font-medium">Scan QR Code</p>
+                    <p className="text-xs text-muted-foreground mt-1">Quick setup via code</p>
+                  </div>
+                </button>
+
+                {/* Cellphone App Option */}
+                <button
+                  onClick={() => handleCellphoneConnection()}
+                  className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-accent/50 transition-all group"
+                >
+                  <div className="p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-all">
+                    <Smartphone className="w-8 h-8 text-primary" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-foreground font-medium">Cellphone App</p>
+                    <p className="text-xs text-muted-foreground mt-1">Use your phone</p>
+                  </div>
+                </button>
+              </div>
+
+              {/* Connected Devices */}
               {connectedDevices.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-foreground">Connected Devices</p>
@@ -460,10 +577,20 @@ function Onboarding() {
                         <Watch className="w-5 h-5 text-green-500" />
                         <div>
                           <p className="text-sm font-medium text-foreground">{device.deviceName}</p>
-                          <p className="text-xs text-muted-foreground">{device.brand} {device.model}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {device.brand} {device.model} • {device.connectionMethod.replace("_", " ")}
+                          </p>
                         </div>
                       </div>
-                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <div className="flex items-center gap-2">
+                        {device.batteryLevel && (
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Battery className="w-4 h-4" />
+                            <span>{device.batteryLevel}%</span>
+                          </div>
+                        )}
+                        <CheckCircle className="w-5 h-5 text-green-500" />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -501,8 +628,8 @@ function Onboarding() {
             <div key={step.number} className="flex flex-col items-center">
               <div
                 className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center ${step.number <= currentStep
-                    ? "bg-shield text-primary-foreground"
-                    : "bg-muted text-muted-foreground"
+                  ? "bg-shield text-primary-foreground"
+                  : "bg-muted text-muted-foreground"
                   }`}
               >
                 {step.number < currentStep ? (

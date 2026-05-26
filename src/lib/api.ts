@@ -305,12 +305,15 @@ export interface ConnectedDevice {
   id: string;
   userId: string;
   deviceName: string;
-  deviceType: "fitness_tracker" | "smartwatch" | "heart_rate_monitor" | "smart_scale" | "sleep_tracker" | "other";
+  deviceType: "fitness_tracker" | "smartwatch" | "heart_rate_monitor" | "smart_scale" | "sleep_tracker" | "smartphone" | "other";
   brand: string;
   model: string;
   lastSynced: string;
   isActive: boolean;
   dataTypes: string[];
+  connectionMethod: "bluetooth" | "qr_code" | "manual" | "cellphone_app";
+  batteryLevel?: number;
+  signalStrength?: number;
 }
 
 export interface OnboardingProgress {
@@ -1346,6 +1349,9 @@ export async function getConnectedDevices(userId: string): Promise<ConnectedDevi
       lastSynced: new Date(Date.now() - 300000).toISOString(),
       isActive: true,
       dataTypes: ["heart_rate", "steps", "sleep", "calories"],
+      connectionMethod: "bluetooth",
+      batteryLevel: 85,
+      signalStrength: 90,
     },
   ];
 }
@@ -1410,6 +1416,150 @@ export async function serverConnectDevice(userId: string, device: Omit<Connected
 export async function serverGetConnectedDevices(userId: string) {
   "use server";
   return await getConnectedDevices(userId);
+}
+
+// Device Connection Methods
+export interface BluetoothDevice {
+  id: string;
+  name: string;
+  deviceType: string;
+  signalStrength: number;
+  isPaired: boolean;
+}
+
+export interface QRCodeResult {
+  deviceId: string;
+  deviceName: string;
+  deviceType: string;
+  brand: string;
+  model: string;
+  timestamp: string;
+}
+
+export async function scanBluetoothDevices(): Promise<BluetoothDevice[]> {
+  // Simulated Bluetooth scan
+  return [
+    {
+      id: "bt-1",
+      name: "Apple Watch Series 9",
+      deviceType: "smartwatch",
+      signalStrength: 85,
+      isPaired: false,
+    },
+    {
+      id: "bt-2",
+      name: "Fitbit Charge 6",
+      deviceType: "fitness_tracker",
+      signalStrength: 72,
+      isPaired: false,
+    },
+    {
+      id: "bt-3",
+      name: "Samsung Galaxy Watch",
+      deviceType: "smartwatch",
+      signalStrength: 65,
+      isPaired: false,
+    },
+  ];
+}
+
+export async function connectBluetoothDevice(deviceId: string, userId: string): Promise<ConnectedDevice> {
+  // Simulated Bluetooth connection
+  const devices = await scanBluetoothDevices();
+  const device = devices.find(d => d.id === deviceId);
+
+  if (!device) {
+    throw new Error("Device not found");
+  }
+
+  return {
+    id: crypto.randomUUID(),
+    userId,
+    deviceName: device.name,
+    deviceType: device.deviceType as any,
+    brand: device.name.split(" ")[0],
+    model: device.name.split(" ").slice(1).join(" "),
+    lastSynced: new Date().toISOString(),
+    isActive: true,
+    dataTypes: ["heart_rate", "steps", "sleep", "calories"],
+    connectionMethod: "bluetooth",
+    batteryLevel: Math.floor(Math.random() * 30) + 70,
+    signalStrength: device.signalStrength,
+  };
+}
+
+export async function scanQRCode(): Promise<QRCodeResult> {
+  // Simulated QR code scan
+  return {
+    deviceId: crypto.randomUUID(),
+    deviceName: "Garmin Forerunner 955",
+    deviceType: "fitness_tracker",
+    brand: "Garmin",
+    model: "Forerunner 955",
+    timestamp: new Date().toISOString(),
+  };
+}
+
+export async function connectViaQRCode(qrResult: QRCodeResult, userId: string): Promise<ConnectedDevice> {
+  // Simulated QR code connection
+  return {
+    id: qrResult.deviceId,
+    userId,
+    deviceName: qrResult.deviceName,
+    deviceType: qrResult.deviceType as any,
+    brand: qrResult.brand,
+    model: qrResult.model,
+    lastSynced: new Date().toISOString(),
+    isActive: true,
+    dataTypes: ["heart_rate", "steps", "sleep", "calories", "gps"],
+    connectionMethod: "qr_code",
+    batteryLevel: Math.floor(Math.random() * 30) + 70,
+    signalStrength: 95,
+  };
+}
+
+export async function connectCellphoneApp(phoneNumber: string, userId: string): Promise<ConnectedDevice> {
+  // Simulated cellphone app connection
+  return {
+    id: crypto.randomUUID(),
+    userId,
+    deviceName: "Samsung Galaxy S24",
+    deviceType: "smartphone",
+    brand: "Samsung",
+    model: "Galaxy S24",
+    lastSynced: new Date().toISOString(),
+    isActive: true,
+    dataTypes: ["heart_rate", "steps", "sleep", "calories", "gps", "activity"],
+    connectionMethod: "cellphone_app",
+    batteryLevel: Math.floor(Math.random() * 30) + 70,
+    signalStrength: 88,
+  };
+}
+
+// Server functions for device connection methods
+export async function serverScanBluetoothDevices() {
+  "use server";
+  return await scanBluetoothDevices();
+}
+
+export async function serverConnectBluetoothDevice(deviceId: string, userId: string) {
+  "use server";
+  return await connectBluetoothDevice(deviceId, userId);
+}
+
+export async function serverScanQRCode() {
+  "use server";
+  return await scanQRCode();
+}
+
+export async function serverConnectViaQRCode(qrResult: QRCodeResult, userId: string) {
+  "use server";
+  return await connectViaQRCode(qrResult, userId);
+}
+
+export async function serverConnectCellphoneApp(phoneNumber: string, userId: string) {
+  "use server";
+  return await connectCellphoneApp(phoneNumber, userId);
 }
 
 // Community-Level Intelligence Interfaces (Theme 1: AI for Safer Communities)
