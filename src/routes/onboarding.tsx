@@ -144,6 +144,14 @@ function Onboarding() {
       });
 
       toast.success("Profile completed successfully!");
+
+      // If user arrived here from the signup flow, go straight to the dashboard
+      const fromSignup = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("from") === "signup";
+      if (fromSignup) {
+        navigate({ to: "/" });
+        return;
+      }
+
       setCompletedOnboarding(true);
     } catch (error) {
       console.error(error);
