@@ -145,9 +145,24 @@ function Onboarding() {
 
       toast.success("Profile completed successfully!");
 
-      // If user arrived here from the signup flow, go straight to the dashboard
+      // If user arrived here from the signup flow, record analytics and go straight to the dashboard
       const fromSignup = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("from") === "signup";
       if (fromSignup) {
+        try {
+          toast.info("Recording completion analytics...");
+          // best-effort analytics call (no hard dependency on backend)
+          if (typeof fetch !== "undefined") {
+            void fetch("/api/analytics", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ event: "signup_onboarding_complete", userId: user.id, timestamp: new Date().toISOString() }),
+            }).catch((err) => console.warn("Analytics call failed:", err));
+          }
+        } catch (err) {
+          console.warn("Analytics dispatch error", err);
+        }
+
+        toast.success("Profile completed — redirecting to app");
         navigate({ to: "/" });
         return;
       }
