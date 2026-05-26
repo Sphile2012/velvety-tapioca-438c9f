@@ -152,10 +152,10 @@ function Onboarding() {
           toast.info("Recording completion analytics...");
           // best-effort analytics call (no hard dependency on backend)
           if (typeof fetch !== "undefined") {
-            void fetch("/api/analytics", {
+            void fetch("/.netlify/functions/analytics", {
               method: "POST",
               headers: { "content-type": "application/json" },
-              body: JSON.stringify({ event: "signup_onboarding_complete", userId: user.id, timestamp: new Date().toISOString() }),
+              body: JSON.stringify({ event: "signup_onboarding_complete", userId: user.id, timestamp: new Date().toISOString(), planSummary: plan }),
             }).catch((err) => console.warn("Analytics call failed:", err));
           }
         } catch (err) {
@@ -298,8 +298,9 @@ function Onboarding() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Gender</label>
+                <label htmlFor="gender" className="text-sm font-medium text-foreground">Gender</label>
                 <select
+                  id="gender"
                   value={formData.personalInfo?.gender || "prefer_not_to_say"}
                   onChange={(e) => updateFormData("personalInfo", { gender: e.target.value as any })}
                   className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -344,8 +345,9 @@ function Onboarding() {
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Primary Goal</label>
+                <label htmlFor="primaryGoal" className="text-sm font-medium text-foreground">Primary Goal</label>
                 <select
+                  id="primaryGoal"
                   value={formData.fitnessGoals?.primaryGoal || "general_fitness"}
                   onChange={(e) => updateFormData("fitnessGoals", { primaryGoal: e.target.value as any })}
                   className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -360,8 +362,9 @@ function Onboarding() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Timeline</label>
+                <label htmlFor="timeline" className="text-sm font-medium text-foreground">Timeline</label>
                 <select
+                  id="timeline"
                   value={formData.fitnessGoals?.timeline || "3 months"}
                   onChange={(e) => updateFormData("fitnessGoals", { timeline: e.target.value })}
                   className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -395,8 +398,9 @@ function Onboarding() {
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Diet Type</label>
+                <label htmlFor="dietType" className="text-sm font-medium text-foreground">Diet Type</label>
                 <select
+                  id="dietType"
                   value={formData.dietaryPreferences?.dietType || "omnivore"}
                   onChange={(e) => updateFormData("dietaryPreferences", { dietType: e.target.value as any })}
                   className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -444,8 +448,9 @@ function Onboarding() {
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Stress Level</label>
+                <label htmlFor="stressLevel" className="text-sm font-medium text-foreground">Stress Level</label>
                 <select
+                  id="stressLevel"
                   value={formData.wellnessMetrics?.stressLevel || "moderate"}
                   onChange={(e) => updateFormData("wellnessMetrics", { stressLevel: e.target.value as any })}
                   className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -469,8 +474,9 @@ function Onboarding() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Sleep Quality</label>
+                <label htmlFor="sleepQuality" className="text-sm font-medium text-foreground">Sleep Quality</label>
                 <select
+                  id="sleepQuality"
                   value={formData.wellnessMetrics?.sleepQuality || "good"}
                   onChange={(e) => updateFormData("wellnessMetrics", { sleepQuality: e.target.value as any })}
                   className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -483,8 +489,9 @@ function Onboarding() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Energy Level</label>
+                <label htmlFor="energyLevel" className="text-sm font-medium text-foreground">Energy Level</label>
                 <select
+                  id="energyLevel"
                   value={formData.wellnessMetrics?.energyLevel || "moderate"}
                   onChange={(e) => updateFormData("wellnessMetrics", { energyLevel: e.target.value as any })}
                   className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -506,8 +513,9 @@ function Onboarding() {
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Current Activity Level</label>
+                <label htmlFor="currentLevel" className="text-sm font-medium text-foreground">Current Activity Level</label>
                 <select
+                  id="currentLevel"
                   value={formData.activityLevel?.currentLevel || "moderately_active"}
                   onChange={(e) => updateFormData("activityLevel", { currentLevel: e.target.value as any })}
                   className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
