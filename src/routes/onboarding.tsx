@@ -114,6 +114,7 @@ function Onboarding() {
   ];
 
   const handleNext = async () => {
+    console.log('handleNext called', { currentStep, totalSteps, isLoading });
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
       // Save progress
@@ -127,6 +128,7 @@ function Onboarding() {
         });
       }
     } else {
+      console.log('Calling handleComplete');
       await handleComplete();
     }
   };
@@ -806,44 +808,46 @@ function Onboarding() {
         {/* Form Card */}
         <div className="rounded-2xl sm:rounded-3xl border border-border bg-card/80 backdrop-blur-sm p-6 sm:p-8 shadow-card">
           {renderStep()}
+        </div>
 
-          {/* Navigation Buttons */}
-          <div className="flex items-center justify-between mt-8 pt-6 border-t border-border relative z-10">
-            {currentStep > 1 ? (
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-card text-foreground hover:bg-accent transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Back
-              </button>
-            ) : (
-              <div />
-            )}
-
+        {/* Navigation Buttons - Outside form card */}
+        <div className="flex items-center justify-between mt-6 pt-6 border-t border-border" style={{ position: 'relative', zIndex: 1000 }}>
+          {currentStep > 1 ? (
             <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleNext();
-              }}
-              disabled={isLoading}
-              className="flex items-center gap-2 px-6 py-2 rounded-xl bg-shield text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
-              type="button"
+              onClick={handleBack}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-card text-foreground hover:bg-accent transition-colors"
             >
-              {isLoading ? (
-                "Processing..."
-              ) : currentStep === totalSteps ? (
-                <>
-                  Complete <CheckCircle className="w-4 h-4" />
-                </>
-              ) : (
-                <>
-                  Next <ChevronRight className="w-4 h-4" />
-                </>
-              )}
+              <ChevronLeft className="w-4 h-4" />
+              Back
             </button>
-          </div>
+          ) : (
+            <div />
+          )}
+
+          <button
+            onClick={(e) => {
+              console.log('Complete button clicked', { isLoading, currentStep, totalSteps });
+              e.preventDefault();
+              e.stopPropagation();
+              handleNext();
+            }}
+            disabled={isLoading}
+            className="flex items-center gap-2 px-6 py-2 rounded-xl bg-shield text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            type="button"
+            style={{ position: 'relative', zIndex: 1000 }}
+          >
+            {isLoading ? (
+              "Processing..."
+            ) : currentStep === totalSteps ? (
+              <>
+                Complete <CheckCircle className="w-4 h-4" />
+              </>
+            ) : (
+              <>
+                Next <ChevronRight className="w-4 h-4" />
+              </>
+            )}
+          </button>
         </div>
 
         {/* Skip Option */}
