@@ -48,9 +48,14 @@ export const handler: Handler = async (event) => {
   const backend = process.env.ANALYTICS_URL || "http://localhost:4000/analytics";
 
   try {
-    const resp = await fetch(backend, {
+      const headers: Record<string, string> = { "content-type": "application/json" };
+      if (process.env.ANALYTICS_FORWARD_KEY) {
+        headers["x-api-key"] = process.env.ANALYTICS_FORWARD_KEY;
+      }
+
+      const resp = await fetch(backend, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers,
       body: event.body,
     });
 

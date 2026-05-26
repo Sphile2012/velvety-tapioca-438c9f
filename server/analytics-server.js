@@ -30,6 +30,15 @@ async function start() {
 
   app.post("/analytics", async (req, res) => {
     try {
+      // Optional API key check for simple auth
+      const serverKey = process.env.ANALYTICS_SERVER_KEY;
+      if (serverKey) {
+        const provided = req.headers["x-api-key"];
+        if (!provided || provided !== serverKey) {
+          return res.status(401).json({ ok: false, error: "Unauthorized" });
+        }
+      }
+
       const { event, userId, ...rest } = req.body || {};
       await db.run(
         "INSERT INTO analytics (event, userId, payload, createdAt) VALUES (?, ?, ?, ?)",
