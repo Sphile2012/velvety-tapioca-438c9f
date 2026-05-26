@@ -31,6 +31,9 @@ function Onboarding() {
   const [isLoading, setIsLoading] = useState(false);
   const [connectedDevices, setConnectedDevices] = useState<ConnectedDevice[]>([]);
   const [personalizedPlan, setPersonalizedPlan] = useState<any>(null);
+  const [isScanningBluetooth, setIsScanningBluetooth] = useState(false);
+  const [isScanningQR, setIsScanningQR] = useState(false);
+  const [discoveredBluetoothDevices, setDiscoveredBluetoothDevices] = useState<BluetoothDevice[]>([]);
 
   const [formData, setFormData] = useState<Partial<UserProfile>>({
     userId: user?.id || "",
