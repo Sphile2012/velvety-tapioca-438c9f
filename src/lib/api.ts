@@ -1327,17 +1327,32 @@ export async function getOnboardingProgress(userId: string): Promise<OnboardingP
 }
 
 export async function connectDevice(userId: string, device: Omit<ConnectedDevice, "id" | "userId" | "lastSynced">): Promise<ConnectedDevice> {
-  // Simulated device connection
-  return {
+  const newDevice: ConnectedDevice = {
     id: crypto.randomUUID(),
     userId,
     ...device,
     lastSynced: new Date().toISOString(),
   };
+
+  if (typeof window !== "undefined") {
+    const key = `connected_devices_${userId}`;
+    const stored = window.localStorage.getItem(key);
+    const devices: ConnectedDevice[] = stored ? JSON.parse(stored) : [];
+    window.localStorage.setItem(key, JSON.stringify([...devices, newDevice]));
+  }
+
+  return newDevice;
 }
 
 export async function getConnectedDevices(userId: string): Promise<ConnectedDevice[]> {
-  // Simulated device list
+  if (typeof window !== "undefined") {
+    const key = `connected_devices_${userId}`;
+    const stored = window.localStorage.getItem(key);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  }
+
   return [
     {
       id: "device-1",

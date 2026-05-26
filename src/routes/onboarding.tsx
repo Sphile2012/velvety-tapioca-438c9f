@@ -1,41 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { ShieldCheck, ArrowRight, User, Activity, Utensils, Heart, Watch, CheckCircle, ChevronRight, ChevronLeft, Bluetooth, QrCode, Smartphone, Battery } from "lucide-react";
-import {
-  serverSaveUserProfile,
-  serverSaveOnboardingProgress,
-  serverGeneratePersonalizedPlan,
-  serverConnectDevice,
-  serverGetConnectedDevices,
-  serverScanBluetoothDevices,
-  serverConnectBluetoothDevice,
-  serverScanQRCode,
-  serverConnectViaQRCode,
-  serverConnectCellphoneApp,
-  type UserProfile,
-  type ConnectedDevice,
-  type BluetoothDevice,
-  type QRCodeResult
-} from "@/lib/api";
+import { useState, useEffect } from "react";
+import { ShieldCheck, User, Activity, Utensils, Heart, Watch, CheckCircle, ChevronRight, ChevronLeft } from "lucide-react";
+import { saveUserProfile, saveOnboardingProgress, generatePersonalizedPlan, connectDevice, getConnectedDevices, type UserProfile, type ConnectedDevice } from "@/lib/api";
 import { useAuth } from "@/contexts/auth-context";
 import { toast } from "sonner";
-
-// Type declarations for Web Bluetooth API
-declare global {
-  interface Navigator {
-    bluetooth?: {
-      requestDevice(options: {
-        acceptAllDevices?: boolean;
-        optionalServices?: string[];
-      }): Promise<BluetoothDevice>;
-    };
-  }
-
-  interface BluetoothDevice {
-    id: string;
-    name?: string;
-  }
-}
 
 export const Route = createFileRoute("/onboarding")({
   component: Onboarding,
@@ -46,11 +14,11 @@ function Onboarding() {
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [completedOnboarding, setCompletedOnboarding] = useState(false);
+  const [bluetoothAvailable, setBluetoothAvailable] = useState(false);
   const [connectedDevices, setConnectedDevices] = useState<ConnectedDevice[]>([]);
   const [personalizedPlan, setPersonalizedPlan] = useState<any>(null);
-  const [isScanningBluetooth, setIsScanningBluetooth] = useState(false);
-  const [isScanningQR, setIsScanningQR] = useState(false);
-  const [discoveredBluetoothDevices, setDiscoveredBluetoothDevices] = useState<BluetoothDevice[]>([]);
 
   const [formData, setFormData] = useState<Partial<UserProfile>>({
     userId: user?.id || "",
@@ -115,14 +83,14 @@ function Onboarding() {
 
   const handleNext = async () => {
     if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
+      setCurrentStep((prev) => prev + 1);
       // Save progress
       if (user) {
-        await serverSaveOnboardingProgress({
+        await saveOnboardingProgress({
           userId: user.id,
           currentStep: currentStep + 1,
           totalSteps,
-          completedSteps: steps.slice(0, currentStep).map(s => s.title),
+          completedSteps: steps.slice(0, currentStep).map((s) => s.title),
           startedAt: new Date().toISOString(),
         });
       }
@@ -133,198 +101,146 @@ function Onboarding() {
 
   const handleBack = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+      setCurrentStep((prev) => prev - 1);
     }
   };
 
   const handleComplete = async () => {
-    if (!user) return;
+    if (!user) {
+      toast.error("Please sign in to complete onboarding.");
+      return;
+    }
+
+    if (!formData.personalInfo?.age || !formData.personalInfo?.weight || !formData.personalInfo?.height) {
+      toast.error("Please complete your personal information before finishing.");
+      return;
+    }
 
     setIsLoading(true);
     try {
-      // Save complete profile
       const completeProfile: UserProfile = {
         ...formData,
         userId: user.id,
         completed: true,
       } as UserProfile;
 
-      const saveResult = await serverSaveUserProfile(completeProfile);
+      const saveResult = await saveUserProfile(completeProfile);
 
-      if (saveResult.success) {
-        // Generate personalized plan
-        const plan = await serverGeneratePersonalizedPlan(completeProfile);
-        setPersonalizedPlan(plan);
-
-        // Mark onboarding as complete
-        await serverSaveOnboardingProgress({
-          userId: user.id,
-          currentStep: totalSteps,
-          totalSteps,
-          completedSteps: steps.map(s => s.title),
-          startedAt: new Date().toISOString(),
-          completedAt: new Date().toISOString(),
-        });
-
-        toast.success("Profile completed successfully!");
-
-        // Navigate to dashboard immediately
-        navigate({ to: "/" });
-      } else {
+      if (!saveResult.success) {
         toast.error(saveResult.error || "Failed to save profile");
+        return;
       }
+
+      const plan = await generatePersonalizedPlan(completeProfile);
+      setPersonalizedPlan(plan);
+
+      await saveOnboardingProgress({
+        userId: user.id,
+        currentStep: totalSteps,
+        totalSteps,
+        completedSteps: steps.map((s) => s.title),
+        startedAt: new Date().toISOString(),
+        completedAt: new Date().toISOString(),
+      });
+
+      toast.success("Profile completed successfully!");
+      setCompletedOnboarding(true);
     } catch (error) {
+      console.error(error);
       toast.error("An error occurred during onboarding");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleConnectDevice = async () => {
+  useEffect(() => {
     if (!user) return;
 
-    try {
-      const newDevice = await serverConnectDevice(user.id, {
-        deviceName: "New Device",
-        deviceType: "fitness_tracker",
-        brand: "Generic",
-        model: "Tracker Pro",
-        isActive: true,
-        dataTypes: ["steps", "heart_rate", "sleep"],
-        connectionMethod: "manual",
-      });
-
-      setConnectedDevices([...connectedDevices, newDevice]);
-      toast.success("Device connected successfully!");
-    } catch (error) {
-      toast.error("Failed to connect device");
-    }
-  };
-
-  const handleBluetoothConnection = async () => {
-    if (!user) return;
-
-    setIsScanningBluetooth(true);
-    setDiscoveredBluetoothDevices([]);
-
-    try {
-      toast.loading("Scanning for Bluetooth devices...", { duration: 5000 });
-
-      // Try to use Web Bluetooth API for actual device scanning
-      if (navigator.bluetooth && navigator.bluetooth.requestDevice) {
-        try {
-          const device = await navigator.bluetooth.requestDevice({
-            acceptAllDevices: true,
-            optionalServices: ['battery_service', 'heart_rate', 'generic_access']
-          });
-
-          toast.dismiss();
-
-          if (device) {
-            const bluetoothDevice: BluetoothDevice = {
-              id: device.id,
-              name: device.name || 'Unknown Device',
-              deviceType: 'BLE Device',
-              signalStrength: Math.floor(Math.random() * 30) + 70,
-              isPaired: false
-            };
-
-            setDiscoveredBluetoothDevices([bluetoothDevice]);
-            toast.success(`Found device: ${device.name}. Select to connect.`);
-          }
-        } catch (bluetoothError) {
-          toast.dismiss();
-          console.log('Bluetooth scan cancelled or failed, using simulation');
-          await fallbackToSimulation();
-        }
-      } else {
-        toast.dismiss();
-        toast.info("Web Bluetooth not supported in this browser. Using simulated devices.");
-        await fallbackToSimulation();
+    const loadDevices = async () => {
+      try {
+        const devices = await getConnectedDevices(user.id);
+        setConnectedDevices(devices);
+      } catch (error) {
+        console.error(error);
+        toast.error("Unable to load connected devices.");
       }
-    } catch (error) {
-      toast.dismiss();
-      toast.error("Failed to scan for Bluetooth devices. Please ensure Bluetooth is enabled.");
-      setIsScanningBluetooth(false);
+    };
+
+    loadDevices();
+  }, [user]);
+
+  useEffect(() => {
+    if (typeof navigator !== "undefined" && "bluetooth" in navigator) {
+      setBluetoothAvailable(true);
     }
+  }, []);
+
+  const handleFinish = () => {
+    navigate({ to: "/" });
   };
 
-  const fallbackToSimulation = async () => {
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    const devices = await serverScanBluetoothDevices();
-    setDiscoveredBluetoothDevices(devices);
-
-    if (devices.length === 0) {
-      toast.error("No Bluetooth devices found. Make sure Bluetooth is enabled and devices are in pairing mode.");
-      setIsScanningBluetooth(false);
+  const handleConnectDevice = async (method: "bluetooth" | "qr" | "phone" = "bluetooth") => {
+    if (!user) {
+      toast.error("Please sign in to connect a device.");
       return;
     }
 
-    toast.success(`Found ${devices.length} device(s). Select a device to connect.`);
-  };
-
-  const handleConnectBluetoothDevice = async (deviceId: string) => {
-    if (!user) return;
+    setIsScanning(true);
+    let devicePayload: Omit<ConnectedDevice, "id" | "userId" | "lastSynced">;
 
     try {
-      toast.loading("Connecting to device...");
-      const connectedDevice = await serverConnectBluetoothDevice(deviceId, user.id);
-      setConnectedDevices([...connectedDevices, connectedDevice]);
-      setDiscoveredBluetoothDevices([]);
-      setIsScanningBluetooth(false);
-      toast.dismiss();
-      toast.success(`Connected to ${connectedDevice.deviceName} via Bluetooth`);
-    } catch (error) {
-      toast.dismiss();
-      toast.error("Failed to connect to device. Please try again.");
-    }
-  };
+      if (method === "bluetooth") {
+        if (!navigator.bluetooth) {
+          throw new Error("Bluetooth is not supported in this browser.");
+        }
 
-  const handleQRCodeConnection = async () => {
-    if (!user) return;
+        const bluetoothDevice = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: ["heart_rate", "battery_service"],
+        });
 
-    setIsScanningQR(true);
-
-    try {
-      toast.loading("Scanning QR code...", { duration: 3000 });
-
-      // Simulate camera scanning delay
-      await new Promise(resolve => setTimeout(resolve, 2500));
-
-      const qrResult = await serverScanQRCode();
-      toast.dismiss();
-      setIsScanningQR(false);
-
-      const connectedDevice = await serverConnectViaQRCode(qrResult, user.id);
-      setConnectedDevices([...connectedDevices, connectedDevice]);
-      toast.success(`Connected to ${connectedDevice.deviceName} via QR code`);
-    } catch (error) {
-      toast.dismiss();
-      setIsScanningQR(false);
-      toast.error("Failed to scan QR code. Please ensure camera access is granted.");
-    }
-  };
-
-  const handleCellphoneConnection = async () => {
-    if (!user) return;
-
-    try {
-      toast.loading("Connecting via cellphone app...");
-      const phoneNumber = prompt("Enter your cellphone number for app connection:");
-      toast.dismiss();
-
-      if (!phoneNumber) {
-        toast.error("Phone number is required");
-        return;
+        devicePayload = {
+          deviceName: bluetoothDevice.name || "Bluetooth Device",
+          deviceType: "fitness_tracker",
+          brand: "Bluetooth",
+          model: bluetoothDevice.id,
+          isActive: true,
+          dataTypes: ["heart_rate", "steps", "sleep"],
+        };
+      } else if (method === "qr") {
+        devicePayload = {
+          deviceName: "QR Connected Device",
+          deviceType: "smartwatch",
+          brand: "Scan QR",
+          model: "QR-DEVICE-001",
+          isActive: true,
+          dataTypes: ["steps", "heart_rate"],
+        };
+      } else {
+        devicePayload = {
+          deviceName: "Phone App Device",
+          deviceType: "smartwatch",
+          brand: "Mobile App",
+          model: "MOBILE-APP-001",
+          isActive: true,
+          dataTypes: ["steps", "sleep", "heart_rate"],
+        };
       }
 
-      const connectedDevice = await serverConnectCellphoneApp(phoneNumber, user.id);
-      setConnectedDevices([...connectedDevices, connectedDevice]);
-      toast.success(`Connected to ${connectedDevice.deviceName} via cellphone app`);
-    } catch (error) {
-      toast.dismiss();
-      toast.error("Failed to connect via cellphone app");
+      const newDevice = await connectDevice(user.id, devicePayload);
+      setConnectedDevices((prev) => [...prev, newDevice]);
+      toast.success("Device connected successfully!");
+    } catch (error: any) {
+      if (error?.name === "NotFoundError") {
+        toast.error("No Bluetooth device selected.");
+      } else if (error?.name === "NotAllowedError" || error?.name === "SecurityError") {
+        toast.error("Bluetooth permission denied or unavailable.");
+      } else {
+        toast.error(error?.message || "Failed to connect device.");
+      }
+      console.error(error);
+    } finally {
+      setIsScanning(false);
     }
   };
 
@@ -603,144 +519,69 @@ function Onboarding() {
             <h3 className="text-2xl font-bold text-foreground">Connect Devices</h3>
             <p className="text-muted-foreground">Choose how you'd like to connect your device for automatic data collection.</p>
 
-            <div className="space-y-4">
-              {/* Connection Method Options */}
-              <div className="grid gap-4 md:grid-cols-3">
-                {/* Bluetooth Option */}
-                <button
-                  onClick={() => handleBluetoothConnection()}
-                  disabled={isScanningBluetooth || isScanningQR}
-                  className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-accent/50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <div className="p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-all relative">
-                    {isScanningBluetooth ? (
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-                    ) : (
-                      <Bluetooth className="w-8 h-8 text-primary" />
-                    )}
-                  </div>
-                  <div className="text-center">
-                    <p className="text-foreground font-medium">Bluetooth</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {isScanningBluetooth ? "Scanning..." : "Pair nearby devices"}
-                    </p>
-                  </div>
-                </button>
-
-                {/* QR Code Option */}
-                <button
-                  onClick={() => handleQRCodeConnection()}
-                  disabled={isScanningBluetooth || isScanningQR}
-                  className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-accent/50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <div className="p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-all relative">
-                    {isScanningQR ? (
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-                    ) : (
-                      <QrCode className="w-8 h-8 text-primary" />
-                    )}
-                  </div>
-                  <div className="text-center">
-                    <p className="text-foreground font-medium">Scan QR Code</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {isScanningQR ? "Scanning..." : "Quick setup via code"}
-                    </p>
-                  </div>
-                </button>
-
-                {/* Cellphone App Option */}
-                <button
-                  onClick={() => handleCellphoneConnection()}
-                  disabled={isScanningBluetooth || isScanningQR}
-                  className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-accent/50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <div className="p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-all">
-                    <Smartphone className="w-8 h-8 text-primary" />
-                  </div>
-                  <div className="text-center">
-                    <p className="text-foreground font-medium">Cellphone App</p>
-                    <p className="text-xs text-muted-foreground mt-1">Use your phone</p>
-                  </div>
-                </button>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="rounded-3xl border border-border bg-muted/50 p-4 text-sm text-foreground">
+                <p className="font-medium">Browser readiness</p>
+                <p className="mt-2">
+                  {bluetoothAvailable
+                    ? "Bluetooth is supported in this browser. You can pair directly if your device allows it."
+                    : "Bluetooth is unavailable in this browser. Use QR code scanning or the cellphone app instead."}
+                </p>
               </div>
 
-              {/* Discovered Bluetooth Devices */}
-              {discoveredBluetoothDevices.length > 0 && (
-                <div className="space-y-3 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
-                  <p className="text-sm font-medium text-blue-900">Discovered Devices</p>
-                  <div className="space-y-2">
-                    {discoveredBluetoothDevices.map((device) => (
-                      <button
-                        key={device.id}
-                        onClick={() => handleConnectBluetoothDevice(device.id)}
-                        className="w-full flex items-center justify-between p-3 bg-white rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Bluetooth className="w-5 h-5 text-blue-600" />
-                          <div className="text-left">
-                            <p className="text-sm font-medium text-blue-900">{device.name}</p>
-                            <p className="text-xs text-blue-700">Signal: {device.signalStrength}%</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                            {device.deviceType}
-                          </span>
-                          <ArrowRight className="w-4 h-4 text-blue-600" />
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                  <button
-                    onClick={() => {
-                      setIsScanningBluetooth(false);
-                      setDiscoveredBluetoothDevices([]);
-                    }}
-                    className="text-xs text-blue-700 hover:text-blue-900 underline"
-                  >
-                    Cancel scanning
-                  </button>
-                </div>
-              )}
+              <button
+                type="button"
+                onClick={() => handleConnectDevice("bluetooth")}
+                disabled={isScanning || !bluetoothAvailable}
+                className="group flex flex-col items-center justify-center gap-3 rounded-3xl border border-border bg-background p-5 text-center transition hover:border-primary/70 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Watch className="w-6 h-6 text-primary transition group-hover:text-primary" />
+                <span className="text-sm font-semibold text-foreground">Bluetooth</span>
+                <span className="text-xs text-muted-foreground">Pair nearby devices</span>
+              </button>
 
-              {/* QR Code Scanning Animation */}
-              {isScanningQR && (
-                <div className="p-6 bg-purple-50 border-2 border-purple-200 rounded-lg">
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="relative w-48 h-48 bg-white rounded-lg border-2 border-purple-300 flex items-center justify-center">
-                      <div className="absolute inset-4 border-2 border-purple-400 rounded-lg animate-pulse" />
-                      <div className="absolute inset-8 border-2 border-purple-400 rounded-lg animate-pulse delay-100" />
-                      <QrCode className="w-16 h-16 text-purple-600" />
-                      <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-purple-600 animate-scan" />
-                    </div>
-                    <p className="text-sm text-purple-900">Scanning QR code...</p>
-                    <p className="text-xs text-purple-700">Point your camera at the device's QR code</p>
-                  </div>
+              <button
+                type="button"
+                onClick={() => handleConnectDevice("qr")}
+                disabled={isScanning}
+                className="group flex flex-col items-center justify-center gap-3 rounded-3xl border border-border bg-background p-5 text-center transition hover:border-primary/70 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                  <span className="text-lg">📷</span>
                 </div>
-              )}
+                <span className="text-sm font-semibold text-foreground">Scan QR Code</span>
+                <span className="text-xs text-muted-foreground">Quick setup via code</span>
+              </button>
 
-              {/* Connected Devices */}
+              <button
+                type="button"
+                onClick={() => handleConnectDevice("phone")}
+                disabled={isScanning}
+                className="group flex flex-col items-center justify-center gap-3 rounded-3xl border border-border bg-background p-5 text-center transition hover:border-primary/70 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                  <span className="text-lg">📱</span>
+                </div>
+                <span className="text-sm font-semibold text-foreground">Cellphone App</span>
+                <span className="text-xs text-muted-foreground">Use your phone</span>
+              </button>
+            </div>
+
+            <div className="space-y-3">
               {connectedDevices.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-foreground">Connected Devices</p>
                   {connectedDevices.map((device) => (
-                    <div key={device.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <div key={device.id} className="flex flex-col gap-2 rounded-3xl border border-border bg-muted/50 p-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex items-center gap-3">
                         <Watch className="w-5 h-5 text-green-500" />
                         <div>
                           <p className="text-sm font-medium text-foreground">{device.deviceName}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {device.brand} {device.model} • {device.connectionMethod.replace("_", " ")}
-                          </p>
+                          <p className="text-xs text-muted-foreground">{device.brand} {device.model}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {device.batteryLevel && (
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Battery className="w-4 h-4" />
-                            <span>{device.batteryLevel}%</span>
-                          </div>
-                        )}
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>{device.isActive ? "Active" : "Inactive"}</span>
                         <CheckCircle className="w-5 h-5 text-green-500" />
                       </div>
                     </div>
@@ -749,7 +590,7 @@ function Onboarding() {
               )}
 
               <p className="text-xs text-muted-foreground text-center">
-                You can connect devices later in your settings
+                You can connect devices later in your settings.
               </p>
             </div>
           </div>
@@ -759,6 +600,75 @@ function Onboarding() {
         return null;
     }
   };
+
+  if (completedOnboarding) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-secondary/20 px-4 py-8 sm:py-12">
+        <div className="w-full max-w-2xl">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-emerald-500/10 mb-4">
+              <CheckCircle className="w-8 h-8 text-emerald-500" />
+            </div>
+            <h1 className="text-3xl font-bold text-foreground">You're all set!</h1>
+            <p className="mt-2 text-sm sm:text-base text-muted-foreground">
+              Your profile is complete and your device connections are ready.
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-border bg-card/80 backdrop-blur-sm p-6 sm:p-8 shadow-card space-y-6">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="rounded-3xl border border-border bg-muted/70 p-5">
+                <h2 className="text-base font-semibold text-foreground">Plan Summary</h2>
+                <p className="mt-3 text-sm text-muted-foreground">A quick overview of your tailored plan.</p>
+                <div className="mt-4 space-y-3 text-sm text-foreground">
+                  <p>{personalizedPlan?.fitnessPlan}</p>
+                  <p>{personalizedPlan?.nutritionPlan}</p>
+                </div>
+              </div>
+              <div className="rounded-3xl border border-border bg-muted/70 p-5">
+                <h2 className="text-base font-semibold text-foreground">Connected Devices</h2>
+                <p className="mt-3 text-sm text-muted-foreground">Devices stored in your browser session.</p>
+                <div className="mt-4 space-y-2 text-sm">
+                  {connectedDevices.length > 0 ? (
+                    connectedDevices.map((device) => (
+                      <div key={device.id} className="rounded-2xl bg-background/80 p-3">
+                        <p className="font-medium text-foreground">{device.deviceName}</p>
+                        <p className="text-xs text-muted-foreground">{device.brand} • {device.model}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-muted-foreground">No active devices were connected yet.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-border bg-muted/70 p-5">
+              <h2 className="text-base font-semibold text-foreground">Recommendations</h2>
+              <ul className="mt-3 space-y-2 text-sm text-foreground">
+                {personalizedPlan?.wellnessRecommendations?.map((item: string, index: number) => (
+                  <li key={index} className="rounded-xl bg-background/80 p-3">{item}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <button
+                type="button"
+                onClick={handleFinish}
+                className="w-full sm:w-auto rounded-xl bg-shield px-6 py-3 text-sm font-semibold text-primary-foreground hover:opacity-90 transition"
+              >
+                Go to Dashboard
+              </button>
+              <p className="text-xs text-muted-foreground">
+                Your onboarding progress has been saved and your session is ready to continue.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-secondary/20 px-4 py-8 sm:py-12">
@@ -780,8 +690,8 @@ function Onboarding() {
             <div key={step.number} className="flex flex-col items-center">
               <div
                 className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center ${step.number <= currentStep
-                  ? "bg-shield text-primary-foreground"
-                  : "bg-muted text-muted-foreground"
+                    ? "bg-shield text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
                   }`}
               >
                 {step.number < currentStep ? (
@@ -808,7 +718,7 @@ function Onboarding() {
           {renderStep()}
 
           {/* Navigation Buttons */}
-          <div className="flex items-center justify-between mt-8 pt-6 border-t border-border relative z-10">
+          <div className="flex items-center justify-between mt-8 pt-6 border-t border-border">
             {currentStep > 1 ? (
               <button
                 onClick={handleBack}
@@ -822,14 +732,9 @@ function Onboarding() {
             )}
 
             <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleNext();
-              }}
+              onClick={handleNext}
               disabled={isLoading}
-              className="flex items-center gap-2 px-6 py-2 rounded-xl bg-shield text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
-              type="button"
+              className="flex items-center gap-2 px-6 py-2 rounded-xl bg-shield text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? (
                 "Processing..."
