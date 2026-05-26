@@ -176,6 +176,7 @@ function Onboarding() {
         model: "Tracker Pro",
         isActive: true,
         dataTypes: ["steps", "heart_rate", "sleep"],
+        connectionMethod: "manual",
       });
 
       setConnectedDevices([...connectedDevices, newDevice]);
@@ -188,42 +189,73 @@ function Onboarding() {
   const handleBluetoothConnection = async () => {
     if (!user) return;
 
+    setIsScanningBluetooth(true);
+    setDiscoveredBluetoothDevices([]);
+
     try {
-      toast.loading("Scanning for Bluetooth devices...");
+      toast.loading("Scanning for Bluetooth devices...", { duration: 3000 });
+
+      // Simulate scanning delay for realism
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
       const devices = await serverScanBluetoothDevices();
+      setDiscoveredBluetoothDevices(devices);
+
+      toast.dismiss();
 
       if (devices.length === 0) {
-        toast.dismiss();
-        toast.error("No Bluetooth devices found");
+        toast.error("No Bluetooth devices found. Make sure Bluetooth is enabled and devices are in pairing mode.");
+        setIsScanningBluetooth(false);
         return;
       }
 
+      toast.success(`Found ${devices.length} device(s). Select a device to connect.`);
+    } catch (error) {
       toast.dismiss();
-      // For demo, connect to the first device
-      const firstDevice = devices[0];
-      const connectedDevice = await serverConnectBluetoothDevice(firstDevice.id, user.id);
+      toast.error("Failed to scan for Bluetooth devices. Please ensure Bluetooth is enabled.");
+      setIsScanningBluetooth(false);
+    }
+  };
+
+  const handleConnectBluetoothDevice = async (deviceId: string) => {
+    if (!user) return;
+
+    try {
+      toast.loading("Connecting to device...");
+      const connectedDevice = await serverConnectBluetoothDevice(deviceId, user.id);
       setConnectedDevices([...connectedDevices, connectedDevice]);
+      setDiscoveredBluetoothDevices([]);
+      setIsScanningBluetooth(false);
+      toast.dismiss();
       toast.success(`Connected to ${connectedDevice.deviceName} via Bluetooth`);
     } catch (error) {
       toast.dismiss();
-      toast.error("Failed to connect via Bluetooth");
+      toast.error("Failed to connect to device. Please try again.");
     }
   };
 
   const handleQRCodeConnection = async () => {
     if (!user) return;
 
+    setIsScanningQR(true);
+
     try {
-      toast.loading("Scanning QR code...");
+      toast.loading("Scanning QR code...", { duration: 3000 });
+
+      // Simulate camera scanning delay
+      await new Promise(resolve => setTimeout(resolve, 2500));
+
       const qrResult = await serverScanQRCode();
       toast.dismiss();
+      setIsScanningQR(false);
 
       const connectedDevice = await serverConnectViaQRCode(qrResult, user.id);
       setConnectedDevices([...connectedDevices, connectedDevice]);
       toast.success(`Connected to ${connectedDevice.deviceName} via QR code`);
     } catch (error) {
       toast.dismiss();
-      toast.error("Failed to connect via QR code");
+      setIsScanningQR(false);
+      toast.error("Failed to scan QR code. Please ensure camera access is granted.");
     }
   };
 
@@ -530,35 +562,50 @@ function Onboarding() {
                 {/* Bluetooth Option */}
                 <button
                   onClick={() => handleBluetoothConnection()}
-                  className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-accent/50 transition-all group"
+                  disabled={isScanningBluetooth || isScanningQR}
+                  className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-accent/50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <div className="p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-all">
-                    <Bluetooth className="w-8 h-8 text-primary" />
+                  <div className="p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-all relative">
+                    {isScanningBluetooth ? (
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+                    ) : (
+                      <Bluetooth className="w-8 h-8 text-primary" />
+                    )}
                   </div>
                   <div className="text-center">
                     <p className="text-foreground font-medium">Bluetooth</p>
-                    <p className="text-xs text-muted-foreground mt-1">Pair nearby devices</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {isScanningBluetooth ? "Scanning..." : "Pair nearby devices"}
+                    </p>
                   </div>
                 </button>
 
                 {/* QR Code Option */}
                 <button
                   onClick={() => handleQRCodeConnection()}
-                  className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-accent/50 transition-all group"
+                  disabled={isScanningBluetooth || isScanningQR}
+                  className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-accent/50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <div className="p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-all">
-                    <QrCode className="w-8 h-8 text-primary" />
+                  <div className="p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-all relative">
+                    {isScanningQR ? (
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+                    ) : (
+                      <QrCode className="w-8 h-8 text-primary" />
+                    )}
                   </div>
                   <div className="text-center">
                     <p className="text-foreground font-medium">Scan QR Code</p>
-                    <p className="text-xs text-muted-foreground mt-1">Quick setup via code</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {isScanningQR ? "Scanning..." : "Quick setup via code"}
+                    </p>
                   </div>
                 </button>
 
                 {/* Cellphone App Option */}
                 <button
                   onClick={() => handleCellphoneConnection()}
-                  className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-accent/50 transition-all group"
+                  disabled={isScanningBluetooth || isScanningQR}
+                  className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-accent/50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <div className="p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-all">
                     <Smartphone className="w-8 h-8 text-primary" />
@@ -569,6 +616,61 @@ function Onboarding() {
                   </div>
                 </button>
               </div>
+
+              {/* Discovered Bluetooth Devices */}
+              {discoveredBluetoothDevices.length > 0 && (
+                <div className="space-y-3 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+                  <p className="text-sm font-medium text-blue-900">Discovered Devices</p>
+                  <div className="space-y-2">
+                    {discoveredBluetoothDevices.map((device) => (
+                      <button
+                        key={device.id}
+                        onClick={() => handleConnectBluetoothDevice(device.id)}
+                        className="w-full flex items-center justify-between p-3 bg-white rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Bluetooth className="w-5 h-5 text-blue-600" />
+                          <div className="text-left">
+                            <p className="text-sm font-medium text-blue-900">{device.name}</p>
+                            <p className="text-xs text-blue-700">Signal: {device.signalStrength}%</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                            {device.deviceType}
+                          </span>
+                          <ArrowRight className="w-4 h-4 text-blue-600" />
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setIsScanningBluetooth(false);
+                      setDiscoveredBluetoothDevices([]);
+                    }}
+                    className="text-xs text-blue-700 hover:text-blue-900 underline"
+                  >
+                    Cancel scanning
+                  </button>
+                </div>
+              )}
+
+              {/* QR Code Scanning Animation */}
+              {isScanningQR && (
+                <div className="p-6 bg-purple-50 border-2 border-purple-200 rounded-lg">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="relative w-48 h-48 bg-white rounded-lg border-2 border-purple-300 flex items-center justify-center">
+                      <div className="absolute inset-4 border-2 border-purple-400 rounded-lg animate-pulse" />
+                      <div className="absolute inset-8 border-2 border-purple-400 rounded-lg animate-pulse delay-100" />
+                      <QrCode className="w-16 h-16 text-purple-600" />
+                      <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-purple-600 animate-scan" />
+                    </div>
+                    <p className="text-sm text-purple-900">Scanning QR code...</p>
+                    <p className="text-xs text-purple-700">Point your camera at the device's QR code</p>
+                  </div>
+                </div>
+              )}
 
               {/* Connected Devices */}
               {connectedDevices.length > 0 && (

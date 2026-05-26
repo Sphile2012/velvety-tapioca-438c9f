@@ -188,4 +188,22 @@
     backdrop-filter: blur(16px);
     border: 1px solid oklch(0.85 0.02 90 / 0.5);
   }
+
+  @keyframes scan {
+    0% {
+      top: 0;
+    }
+
+    50% {
+      top: 100%;
+    }
+
+    100% {
+      top: 0;
+    }
+  }
+
+  .animate-scan {
+    animation: scan 2s linear infinite;
+  }
 }
