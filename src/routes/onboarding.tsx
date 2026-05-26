@@ -20,6 +20,23 @@ import {
 import { useAuth } from "@/contexts/auth-context";
 import { toast } from "sonner";
 
+// Type declarations for Web Bluetooth API
+declare global {
+  interface Navigator {
+    bluetooth?: {
+      requestDevice(options: {
+        acceptAllDevices?: boolean;
+        optionalServices?: string[];
+      }): Promise<BluetoothDevice>;
+    };
+  }
+
+  interface BluetoothDevice {
+    id: string;
+    name?: string;
+  }
+}
+
 export const Route = createFileRoute("/onboarding")({
   component: Onboarding,
 });
@@ -791,7 +808,7 @@ function Onboarding() {
           {renderStep()}
 
           {/* Navigation Buttons */}
-          <div className="flex items-center justify-between mt-8 pt-6 border-t border-border">
+          <div className="flex items-center justify-between mt-8 pt-6 border-t border-border relative z-10">
             {currentStep > 1 ? (
               <button
                 onClick={handleBack}
@@ -805,9 +822,14 @@ function Onboarding() {
             )}
 
             <button
-              onClick={handleNext}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleNext();
+              }}
               disabled={isLoading}
-              className="flex items-center gap-2 px-6 py-2 rounded-xl bg-shield text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-2 px-6 py-2 rounded-xl bg-shield text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              type="button"
             >
               {isLoading ? (
                 "Processing..."
