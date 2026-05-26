@@ -1705,3 +1705,792 @@ export async function serverGeneratePersonalizedPlan(profile: UserProfile) {
   "use server";
   return await generatePersonalizedPlan(profile);
 }
+
+// Smart Medical Management Interfaces
+export interface MedicalAppointment {
+  id: string;
+  userId: string;
+  doctorName: string;
+  doctorSpecialty: string;
+  hospitalClinic: string;
+  appointmentType: "consultation" | "follow_up" | "checkup" | "emergency" | "procedure" | "therapy";
+  date: string;
+  time: string;
+  duration: number;
+  status: "scheduled" | "confirmed" | "completed" | "cancelled" | "rescheduled";
+  reason: string;
+  notes?: string;
+  reminderSent: boolean;
+  reminderTime?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Medication {
+  id: string;
+  userId: string;
+  name: string;
+  genericName?: string;
+  dosage: string;
+  frequency: string;
+  route: "oral" | "injection" | "topical" | "inhalation" | "other";
+  prescribedBy: string;
+  prescribedDate: string;
+  startDate: string;
+  endDate?: string;
+  instructions: string;
+  sideEffects?: string[];
+  refillsRemaining: number;
+  isActive: boolean;
+  adherenceRate: number;
+}
+
+export interface MedicationReminder {
+  id: string;
+  userId: string;
+  medicationId: string;
+  medicationName: string;
+  scheduledTime: string;
+  taken: boolean;
+  takenAt?: string;
+  skipped: boolean;
+  skippedReason?: string;
+  notes?: string;
+}
+
+export interface TreatmentPlan {
+  id: string;
+  userId: string;
+  condition: string;
+  doctorName: string;
+  startDate: string;
+  endDate?: string;
+  goals: string[];
+  medications: string[];
+  therapies: string[];
+  lifestyleChanges: string[];
+  followUpSchedule: { date: string; purpose: string }[];
+  progress: number;
+  status: "active" | "completed" | "on_hold";
+  notes?: string;
+}
+
+export interface SymptomLog {
+  id: string;
+  userId: string;
+  conditionId?: string;
+  timestamp: string;
+  symptoms: {
+    name: string;
+    severity: "mild" | "moderate" | "severe";
+    duration?: string;
+    notes?: string;
+  }[];
+  vitals?: {
+    temperature?: number;
+    bloodPressure?: { systolic: number; diastolic: number };
+    heartRate?: number;
+    oxygenSaturation?: number;
+  };
+  triggers?: string[];
+  reliefMeasures?: string[];
+  impactOnDailyLife: "none" | "mild" | "moderate" | "severe";
+  notes?: string;
+}
+
+export interface ChronicCondition {
+  id: string;
+  userId: string;
+  condition: string;
+  diagnosisDate: string;
+  severity: "mild" | "moderate" | "severe";
+  status: "stable" | "improving" | "worsening";
+  managingDoctor: string;
+  medications: string[];
+  lastCheckup: string;
+  nextCheckup?: string;
+  emergencyContacts: { name: string; phone: string; relationship: string }[];
+  notes?: string;
+}
+
+// Smart Medical Management Functions
+export async function createMedicalAppointment(appointment: Omit<MedicalAppointment, "id" | "reminderSent" | "createdAt" | "updatedAt">): Promise<MedicalAppointment> {
+  return {
+    id: crypto.randomUUID(),
+    reminderSent: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    ...appointment,
+  };
+}
+
+export async function getMedicalAppointments(userId: string): Promise<MedicalAppointment[]> {
+  const now = new Date();
+  return [
+    {
+      id: crypto.randomUUID(),
+      userId,
+      doctorName: "Dr. Sarah Johnson",
+      doctorSpecialty: "Cardiologist",
+      hospitalClinic: "Johannesburg General Hospital",
+      appointmentType: "follow_up",
+      date: new Date(now.getTime() + 7 * 86400000).toISOString().split("T")[0],
+      time: "10:00",
+      duration: 30,
+      status: "scheduled",
+      reason: "Cardiac health monitoring",
+      reminderSent: false,
+      createdAt: new Date(now.getTime() - 86400000).toISOString(),
+      updatedAt: new Date(now.getTime() - 86400000).toISOString(),
+    },
+    {
+      id: crypto.randomUUID(),
+      userId,
+      doctorName: "Dr. Michael Chen",
+      doctorSpecialty: "General Practitioner",
+      hospitalClinic: "Sandton Medical Center",
+      appointmentType: "checkup",
+      date: new Date(now.getTime() - 14 * 86400000).toISOString().split("T")[0],
+      time: "14:30",
+      duration: 45,
+      status: "completed",
+      reason: "Annual health checkup",
+      reminderSent: true,
+      reminderTime: new Date(now.getTime() - 15 * 86400000).toISOString(),
+      createdAt: new Date(now.getTime() - 30 * 86400000).toISOString(),
+      updatedAt: new Date(now.getTime() - 14 * 86400000).toISOString(),
+    },
+  ];
+}
+
+export async function addMedication(medication: Omit<Medication, "id" | "adherenceRate">): Promise<Medication> {
+  return {
+    id: crypto.randomUUID(),
+    adherenceRate: 0,
+    ...medication,
+  };
+}
+
+export async function getMedications(userId: string): Promise<Medication[]> {
+  return [
+    {
+      id: crypto.randomUUID(),
+      userId,
+      name: "Lisinopril",
+      genericName: "Lisinopril",
+      dosage: "10mg",
+      frequency: "Once daily",
+      route: "oral",
+      prescribedBy: "Dr. Sarah Johnson",
+      prescribedDate: new Date(Date.now() - 30 * 86400000).toISOString(),
+      startDate: new Date(Date.now() - 30 * 86400000).toISOString(),
+      instructions: "Take one tablet in the morning with food",
+      sideEffects: ["Dizziness", "Dry cough"],
+      refillsRemaining: 3,
+      isActive: true,
+      adherenceRate: 92,
+    },
+    {
+      id: crypto.randomUUID(),
+      userId,
+      name: "Metformin",
+      genericName: "Metformin hydrochloride",
+      dosage: "500mg",
+      frequency: "Twice daily",
+      route: "oral",
+      prescribedBy: "Dr. Michael Chen",
+      prescribedDate: new Date(Date.now() - 60 * 86400000).toISOString(),
+      startDate: new Date(Date.now() - 60 * 86400000).toISOString(),
+      instructions: "Take one tablet with breakfast and one with dinner",
+      sideEffects: ["Nausea", "Diarrhea"],
+      refillsRemaining: 2,
+      isActive: true,
+      adherenceRate: 88,
+    },
+  ];
+}
+
+export async function createMedicationReminder(reminder: Omit<MedicationReminder, "id" | "taken" | "skipped">): Promise<MedicationReminder> {
+  return {
+    id: crypto.randomUUID(),
+    taken: false,
+    skipped: false,
+    ...reminder,
+  };
+}
+
+export async function getMedicationReminders(userId: string, date: string): Promise<MedicationReminder[]> {
+  return [
+    {
+      id: crypto.randomUUID(),
+      userId,
+      medicationId: "med-1",
+      medicationName: "Lisinopril",
+      scheduledTime: `${date}T08:00:00`,
+      taken: true,
+      takenAt: `${date}T08:05:00`,
+      skipped: false,
+    },
+    {
+      id: crypto.randomUUID(),
+      userId,
+      medicationId: "med-2",
+      medicationName: "Metformin",
+      scheduledTime: `${date}T08:00:00`,
+      taken: true,
+      takenAt: `${date}T08:10:00`,
+      skipped: false,
+    },
+    {
+      id: crypto.randomUUID(),
+      userId,
+      medicationId: "med-2",
+      medicationName: "Metformin",
+      scheduledTime: `${date}T18:00:00`,
+      taken: false,
+      skipped: false,
+    },
+  ];
+}
+
+export async function createTreatmentPlan(plan: Omit<TreatmentPlan, "id" | "progress">): Promise<TreatmentPlan> {
+  return {
+    id: crypto.randomUUID(),
+    progress: 0,
+    ...plan,
+  };
+}
+
+export async function getTreatmentPlans(userId: string): Promise<TreatmentPlan[]> {
+  return [
+    {
+      id: crypto.randomUUID(),
+      userId,
+      condition: "Hypertension",
+      doctorName: "Dr. Sarah Johnson",
+      startDate: new Date(Date.now() - 90 * 86400000).toISOString(),
+      goals: ["Reduce blood pressure to normal range", "Maintain healthy weight", "Reduce sodium intake"],
+      medications: ["Lisinopril"],
+      therapies: ["Stress management", "Regular exercise"],
+      lifestyleChanges: ["DASH diet", "30 minutes daily exercise", "Limit alcohol"],
+      followUpSchedule: [
+        { date: new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0], purpose: "Blood pressure check" },
+        { date: new Date(Date.now() + 90 * 86400000).toISOString().split("T")[0], purpose: "Comprehensive evaluation" },
+      ],
+      progress: 65,
+      status: "active",
+      notes: "Patient showing good adherence to treatment plan",
+    },
+  ];
+}
+
+export async function logSymptom(log: Omit<SymptomLog, "id">): Promise<SymptomLog> {
+  return {
+    id: crypto.randomUUID(),
+    ...log,
+  };
+}
+
+export async function getSymptomLogs(userId: string, startDate: string, endDate: string): Promise<SymptomLog[]> {
+  return [
+    {
+      id: crypto.randomUUID(),
+      userId,
+      conditionId: "condition-1",
+      timestamp: new Date(Date.now() - 86400000).toISOString(),
+      symptoms: [
+        { name: "Headache", severity: "mild", duration: "2 hours" },
+        { name: "Dizziness", severity: "mild" },
+      ],
+      vitals: {
+        bloodPressure: { systolic: 135, diastolic: 85 },
+        heartRate: 78,
+      },
+      triggers: ["Stress", "Lack of sleep"],
+      impactOnDailyLife: "mild",
+      notes: "Symptoms improved after rest",
+    },
+    {
+      id: crypto.randomUUID(),
+      userId,
+      conditionId: "condition-1",
+      timestamp: new Date(Date.now() - 2 * 86400000).toISOString(),
+      symptoms: [
+        { name: "Fatigue", severity: "moderate", duration: "All day" },
+      ],
+      vitals: {
+        bloodPressure: { systolic: 140, diastolic: 90 },
+        heartRate: 82,
+      },
+      triggers: ["Poor sleep"],
+      reliefMeasures: ["Rest", "Hydration"],
+      impactOnDailyLife: "moderate",
+    },
+  ];
+}
+
+export async function addChronicCondition(condition: Omit<ChronicCondition, "id">): Promise<ChronicCondition> {
+  return {
+    id: crypto.randomUUID(),
+    ...condition,
+  };
+}
+
+export async function getChronicConditions(userId: string): Promise<ChronicCondition[]> {
+  return [
+    {
+      id: crypto.randomUUID(),
+      userId,
+      condition: "Hypertension",
+      diagnosisDate: new Date(Date.now() - 365 * 86400000).toISOString(),
+      severity: "moderate",
+      status: "stable",
+      managingDoctor: "Dr. Sarah Johnson",
+      medications: ["Lisinopril"],
+      lastCheckup: new Date(Date.now() - 30 * 86400000).toISOString(),
+      nextCheckup: new Date(Date.now() + 30 * 86400000).toISOString(),
+      emergencyContacts: [
+        { name: "Dr. Sarah Johnson", phone: "+27 11 123 4567", relationship: "Doctor" },
+        { name: "Emergency Services", phone: "10111", relationship: "Emergency" },
+      ],
+      notes: "Condition well-managed with medication and lifestyle changes",
+    },
+  ];
+}
+
+export async function calculateMedicationAdherence(userId: string, medicationId: string, days: number = 30): Promise<{ adherenceRate: number; missedDoses: number; totalDoses: number }> {
+  const totalDoses = days * 2;
+  const missedDoses = Math.floor(totalDoses * 0.1);
+  const adherenceRate = ((totalDoses - missedDoses) / totalDoses) * 100;
+
+  return {
+    adherenceRate: Math.round(adherenceRate),
+    missedDoses,
+    totalDoses,
+  };
+}
+
+// Server functions for Smart Medical Management
+export async function serverCreateMedicalAppointment(appointment: Omit<MedicalAppointment, "id" | "reminderSent" | "createdAt" | "updatedAt">) {
+  "use server";
+  return await createMedicalAppointment(appointment);
+}
+
+export async function serverGetMedicalAppointments(userId: string) {
+  "use server";
+  return await getMedicalAppointments(userId);
+}
+
+export async function serverAddMedication(medication: Omit<Medication, "id" | "adherenceRate">) {
+  "use server";
+  return await addMedication(medication);
+}
+
+export async function serverGetMedications(userId: string) {
+  "use server";
+  return await getMedications(userId);
+}
+
+export async function serverCreateMedicationReminder(reminder: Omit<MedicationReminder, "id" | "taken" | "skipped">) {
+  "use server";
+  return await createMedicationReminder(reminder);
+}
+
+export async function serverGetMedicationReminders(userId: string, date: string) {
+  "use server";
+  return await getMedicationReminders(userId, date);
+}
+
+export async function serverCreateTreatmentPlan(plan: Omit<TreatmentPlan, "id" | "progress">) {
+  "use server";
+  return await createTreatmentPlan(plan);
+}
+
+export async function serverGetTreatmentPlans(userId: string) {
+  "use server";
+  return await getTreatmentPlans(userId);
+}
+
+export async function serverLogSymptom(log: Omit<SymptomLog, "id">) {
+  "use server";
+  return await logSymptom(log);
+}
+
+export async function serverGetSymptomLogs(userId: string, startDate: string, endDate: string) {
+  "use server";
+  return await getSymptomLogs(userId, startDate, endDate);
+}
+
+export async function serverAddChronicCondition(condition: Omit<ChronicCondition, "id">) {
+  "use server";
+  return await addChronicCondition(condition);
+}
+
+export async function serverGetChronicConditions(userId: string) {
+  "use server";
+  return await getChronicConditions(userId);
+}
+
+export async function serverCalculateMedicationAdherence(userId: string, medicationId: string, days: number = 30) {
+  "use server";
+  return await calculateMedicationAdherence(userId, medicationId, days);
+}
+
+// Secure HIV Support Interfaces
+export interface HIVHealthRecord {
+  id: string;
+  userId: string;
+  isEncrypted: boolean;
+  encryptionKey: string;
+  diagnosisDate: string;
+  currentCD4Count?: number;
+  viralLoad?: number;
+  viralLoadDate?: string;
+  artStartDate?: string;
+  currentARTRegimen?: string;
+  adherenceRate: number;
+  lastCheckup: string;
+  nextCheckup?: string;
+  notes?: string;
+  privacyLevel: "standard" | "enhanced" | "maximum";
+}
+
+export interface ConfidentialCounselingSession {
+  id: string;
+  userId: string;
+  sessionDate: string;
+  counselorName: string;
+  sessionType: "initial" | "follow_up" | "crisis" | "adherence_support" | "mental_health";
+  topics: string[];
+  notes: string;
+  isEncrypted: boolean;
+  followUpActions: string[];
+  nextSession?: string;
+}
+
+export interface WellnessMonitoring {
+  id: string;
+  userId: string;
+  timestamp: string;
+  mood: "excellent" | "good" | "fair" | "poor";
+  energyLevel: "high" | "medium" | "low";
+  sleepQuality: "excellent" | "good" | "fair" | "poor";
+  stressLevel: "low" | "moderate" | "high";
+  medicationTaken: boolean;
+  sideEffects?: string[];
+  socialSupport: "excellent" | "good" | "fair" | "poor";
+  notes?: string;
+}
+
+export interface ARTAdherenceReminder {
+  id: string;
+  userId: string;
+  medicationName: string;
+  scheduledTime: string;
+  taken: boolean;
+  takenAt?: string;
+  skipped: boolean;
+  skippedReason?: string;
+  supportMessage: string;
+}
+
+export interface ConfidentialResource {
+  id: string;
+  name: string;
+  type: "hotline" | "counseling" | "support_group" | "healthcare" | "legal";
+  contact: string;
+  is24_7: boolean;
+  isConfidential: boolean;
+  description: string;
+  languages: string[];
+}
+
+// Secure HIV Support Functions
+export async function createHIVHealthRecord(record: Omit<HIVHealthRecord, "id" | "isEncrypted" | "encryptionKey" | "adherenceRate">): Promise<HIVHealthRecord> {
+  return {
+    id: crypto.randomUUID(),
+    isEncrypted: true,
+    encryptionKey: crypto.randomUUID(),
+    adherenceRate: 0,
+    ...record,
+  };
+}
+
+export async function getHIVHealthRecord(userId: string): Promise<HIVHealthRecord | null> {
+  // Simulated HIV health record
+  return {
+    id: crypto.randomUUID(),
+    userId,
+    isEncrypted: true,
+    encryptionKey: crypto.randomUUID(),
+    diagnosisDate: new Date(Date.now() - 365 * 86400000).toISOString(),
+    currentCD4Count: 650,
+    viralLoad: 50,
+    viralLoadDate: new Date(Date.now() - 30 * 86400000).toISOString(),
+    artStartDate: new Date(Date.now() - 360 * 86400000).toISOString(),
+    currentARTRegimen: "Tenofovir/Lamivudine/Dolutegravir",
+    adherenceRate: 95,
+    lastCheckup: new Date(Date.now() - 30 * 86400000).toISOString(),
+    nextCheckup: new Date(Date.now() + 90 * 86400000).toISOString(),
+    notes: "Patient showing excellent adherence and viral suppression",
+    privacyLevel: "maximum",
+  };
+}
+
+export async function bookCounselingSession(session: Omit<ConfidentialCounselingSession, "id" | "isEncrypted">): Promise<ConfidentialCounselingSession> {
+  return {
+    id: crypto.randomUUID(),
+    isEncrypted: true,
+    ...session,
+  };
+}
+
+export async function getCounselingSessions(userId: string): Promise<ConfidentialCounselingSession[]> {
+  // Simulated counseling sessions
+  return [
+    {
+      id: crypto.randomUUID(),
+      userId,
+      sessionDate: new Date(Date.now() - 14 * 86400000).toISOString(),
+      counselorName: "Dr. Thandi Mbeki",
+      sessionType: "follow_up",
+      topics: ["Adherence support", "Mental wellness", "Social support"],
+      notes: "Patient expressed feeling well-supported. Discussed strategies for maintaining adherence during travel.",
+      isEncrypted: true,
+      followUpActions: ["Continue current ART regimen", "Schedule next session in 3 months"],
+      nextSession: new Date(Date.now() + 75 * 86400000).toISOString(),
+    },
+    {
+      id: crypto.randomUUID(),
+      userId,
+      sessionDate: new Date(Date.now() - 90 * 86400000).toISOString(),
+      counselorName: "Dr. Thandi Mbeki",
+      sessionType: "initial",
+      topics: ["Treatment education", "Adherence planning", "Mental health support"],
+      notes: "Initial counseling session completed. Patient engaged and motivated.",
+      isEncrypted: true,
+      followUpActions: ["Start ART regimen", "Schedule follow-up in 2 weeks"],
+    },
+  ];
+}
+
+export async function logWellnessMonitoring(log: Omit<WellnessMonitoring, "id">): Promise<WellnessMonitoring> {
+  return {
+    id: crypto.randomUUID(),
+    ...log,
+  };
+}
+
+export async function getWellnessMonitoring(userId: string, startDate: string, endDate: string): Promise<WellnessMonitoring[]> {
+  // Simulated wellness monitoring
+  return [
+    {
+      id: crypto.randomUUID(),
+      userId,
+      timestamp: new Date(Date.now() - 86400000).toISOString(),
+      mood: "good",
+      energyLevel: "medium",
+      sleepQuality: "good",
+      stressLevel: "low",
+      medicationTaken: true,
+      socialSupport: "good",
+      notes: "Feeling well, no side effects",
+    },
+    {
+      id: crypto.randomUUID(),
+      userId,
+      timestamp: new Date(Date.now() - 2 * 86400000).toISOString(),
+      mood: "excellent",
+      energyLevel: "high",
+      sleepQuality: "excellent",
+      stressLevel: "low",
+      medicationTaken: true,
+      socialSupport: "excellent",
+      notes: "Great day, feeling motivated",
+    },
+  ];
+}
+
+export async function createARTAdherenceReminder(reminder: Omit<ARTAdherenceReminder, "id" | "supportMessage">): Promise<ARTAdherenceReminder> {
+  const supportMessages = [
+    "Remember: Taking your medication on time keeps you healthy and protects your future.",
+    "You're doing great! Every dose counts towards your health goals.",
+    "Stay strong! Your commitment to treatment is inspiring.",
+    "Small steps every day lead to big results. Keep going!",
+  ];
+
+  return {
+    id: crypto.randomUUID(),
+    supportMessage: supportMessages[Math.floor(Math.random() * supportMessages.length)],
+    ...reminder,
+  };
+}
+
+export async function getARTAdherenceReminders(userId: string, date: string): Promise<ARTAdherenceReminder[]> {
+  return [
+    {
+      id: crypto.randomUUID(),
+      userId,
+      medicationName: "Tenofovir/Lamivudine/Dolutegravir",
+      scheduledTime: `${date}T08:00:00`,
+      taken: true,
+      takenAt: `${date}T08:05:00`,
+      skipped: false,
+      supportMessage: "Remember: Taking your medication on time keeps you healthy and protects your future.",
+    },
+    {
+      id: crypto.randomUUID(),
+      userId,
+      medicationName: "Tenofovir/Lamivudine/Dolutegravir",
+      scheduledTime: `${date}T20:00:00`,
+      taken: false,
+      skipped: false,
+      supportMessage: "You're doing great! Every dose counts towards your health goals.",
+    },
+  ];
+}
+
+export async function getConfidentialResources(): Promise<ConfidentialResource[]> {
+  // South Africa-specific confidential resources
+  return [
+    {
+      id: crypto.randomUUID(),
+      name: "National AIDS Helpline",
+      type: "hotline",
+      contact: "0800-012-322",
+      is24_7: true,
+      isConfidential: true,
+      description: "Free, confidential HIV/AIDS counseling and support",
+      languages: ["English", "Zulu", "Xhosa", "Afrikaans", "Sotho"],
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "Lifeline South Africa",
+      type: "counseling",
+      contact: "0861-322-322",
+      is24_7: true,
+      isConfidential: true,
+      description: "24-hour crisis counseling and emotional support",
+      languages: ["English", "Zulu", "Xhosa", "Afrikaans"],
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "Treatment Action Campaign",
+      type: "support_group",
+      contact: "021-788-3507",
+      is24_7: false,
+      isConfidential: true,
+      description: "HIV treatment literacy and advocacy support",
+      languages: ["English", "Zulu", "Xhosa"],
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "South African National AIDS Council (SANAC)",
+      type: "healthcare",
+      contact: "012-394-9000",
+      is24_7: false,
+      isConfidential: true,
+      description: "National HIV/AIDS coordination and resources",
+      languages: ["English", "Zulu", "Xhosa", "Afrikaans", "Sotho", "Tswana", "Tsonga"],
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "AIDS Law Project",
+      type: "legal",
+      contact: "011-356-1100",
+      is24_7: false,
+      isConfidential: true,
+      description: "Legal support for HIV-related discrimination and rights",
+      languages: ["English", "Zulu", "Xhosa", "Afrikaans"],
+    },
+  ];
+}
+
+export async function getPersonalizedHealthGuidance(userId: string): Promise<{
+  adherenceTips: string[];
+  wellnessRecommendations: string[];
+  mentalHealthSupport: string[];
+  nutritionAdvice: string[];
+}> {
+  return {
+    adherenceTips: [
+      "Set a daily alarm for your medication time",
+      "Use a pill organizer to track doses",
+      "Keep a backup supply of medication",
+      "Link medication time with daily routines (e.g., after brushing teeth)",
+      "Ask a trusted friend or family member for support",
+    ],
+    wellnessRecommendations: [
+      "Aim for 7-8 hours of quality sleep each night",
+      "Engage in regular physical activity (30 minutes daily)",
+      "Practice stress management techniques like meditation",
+      "Stay connected with supportive friends and family",
+      "Attend regular medical check-ups",
+    ],
+    mentalHealthSupport: [
+      "Consider joining a support group for people living with HIV",
+      "Practice self-compassion and avoid self-stigma",
+      "Seek professional counseling if feeling overwhelmed",
+      "Stay informed about HIV treatment and care",
+      "Focus on living a healthy, fulfilling life",
+    ],
+    nutritionAdvice: [
+      "Maintain a balanced diet rich in fruits and vegetables",
+      "Stay hydrated by drinking plenty of water",
+      "Include protein in every meal",
+      "Limit alcohol and avoid tobacco",
+      "Consult a nutritionist for personalized advice",
+    ],
+  };
+}
+
+// Server functions for Secure HIV Support
+export async function serverCreateHIVHealthRecord(record: Omit<HIVHealthRecord, "id" | "isEncrypted" | "encryptionKey" | "adherenceRate">) {
+  "use server";
+  return await createHIVHealthRecord(record);
+}
+
+export async function serverGetHIVHealthRecord(userId: string) {
+  "use server";
+  return await getHIVHealthRecord(userId);
+}
+
+export async function serverBookCounselingSession(session: Omit<ConfidentialCounselingSession, "id" | "isEncrypted">) {
+  "use server";
+  return await bookCounselingSession(session);
+}
+
+export async function serverGetCounselingSessions(userId: string) {
+  "use server";
+  return await getCounselingSessions(userId);
+}
+
+export async function serverLogWellnessMonitoring(log: Omit<WellnessMonitoring, "id">) {
+  "use server";
+  return await logWellnessMonitoring(log);
+}
+
+export async function serverGetWellnessMonitoring(userId: string, startDate: string, endDate: string) {
+  "use server";
+  return await getWellnessMonitoring(userId, startDate, endDate);
+}
+
+export async function serverCreateARTAdherenceReminder(reminder: Omit<ARTAdherenceReminder, "id" | "supportMessage">) {
+  "use server";
+  return await createARTAdherenceReminder(reminder);
+}
+
+export async function serverGetARTAdherenceReminders(userId: string, date: string) {
+  "use server";
+  return await getARTAdherenceReminders(userId, date);
+}
+
+export async function serverGetConfidentialResources() {
+  "use server";
+  return await getConfidentialResources();
+}
+
+export async function serverGetPersonalizedHealthGuidance(userId: string) {
+  "use server";
+  return await getPersonalizedHealthGuidance(userId);
+}

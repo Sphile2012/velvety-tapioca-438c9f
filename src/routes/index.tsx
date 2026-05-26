@@ -32,6 +32,8 @@ import { LifestyleScore } from "@/components/lifestyle-score";
 import { RewardPoints } from "@/components/reward-points";
 import { PredictiveInsights } from "@/components/predictive-insights";
 import { CommunityIntelligence } from "@/components/community-intelligence";
+import { MedicalManagement } from "@/components/medical-management";
+import { HIVSupport } from "@/components/hiv-support";
 import { useAuth } from "@/contexts/auth-context";
 
 export const Route = createFileRoute("/")({
@@ -64,6 +66,16 @@ function Index() {
             {/* Community Intelligence Section */}
             <div className="pt-8 border-t">
               <CommunityIntelligence />
+            </div>
+
+            {/* Medical Management Section */}
+            <div className="pt-8 border-t">
+              <MedicalManagement />
+            </div>
+
+            {/* HIV Support Section */}
+            <div className="pt-8 border-t">
+              <HIVSupport />
             </div>
           </div>
         </section>
