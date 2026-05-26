@@ -763,9 +763,14 @@ function Onboarding() {
             )}
 
             <button
-              onClick={handleNext}
+              type="button"
+              aria-label={currentStep === totalSteps ? "Complete onboarding" : "Next step"}
+              onClick={(e) => {
+                e.preventDefault();
+                if (!isLoading) handleNext();
+              }}
               disabled={isLoading}
-              className="flex items-center gap-2 px-6 py-2 rounded-xl bg-shield text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="relative z-30 pointer-events-auto flex items-center gap-2 px-6 py-2 rounded-xl bg-shield text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? (
                 "Processing..."
