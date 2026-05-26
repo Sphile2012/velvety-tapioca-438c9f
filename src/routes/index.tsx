@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import heroShield from "@/assets/hero-shield.jpg";
 import {
   ShieldCheck,
@@ -26,6 +27,8 @@ import {
   Scale,
   FileText,
   Gavel,
+  Menu,
+  X,
 } from "lucide-react";
 import { AIGuide } from "@/components/ai-guide";
 import { LifestyleScore } from "@/components/lifestyle-score";
@@ -94,6 +97,8 @@ function Index() {
 }
 
 function Nav({ isAuthenticated, user, onLogout }: { isAuthenticated: boolean; user: any; onLogout: () => void }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <header className="sticky top-0 z-50 glass">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
@@ -103,6 +108,8 @@ function Nav({ isAuthenticated, user, onLogout }: { isAuthenticated: boolean; us
           </div>
           <span className="text-base sm:text-lg font-semibold tracking-tight">Aegis Health</span>
         </div>
+
+        {/* Desktop Navigation */}
         <nav className="hidden lg:flex gap-6 sm:gap-8 text-xs sm:text-sm text-muted-foreground">
           <a href="#pillars" className="hover:text-foreground">
             Platform
@@ -122,8 +129,15 @@ function Nav({ isAuthenticated, user, onLogout }: { isAuthenticated: boolean; us
           <a href="#ethics" className="hover:text-foreground">
             Ethics
           </a>
+          {isAuthenticated && (
+            <Link to="/profile" className="hover:text-foreground">
+              Profile
+            </Link>
+          )}
         </nav>
-        <div className="flex items-center gap-2 sm:gap-3">
+
+        {/* Desktop Actions */}
+        <div className="hidden lg:flex items-center gap-2 sm:gap-3">
           <a href="#dashboard" className="rounded-full bg-shield px-4 py-2 text-sm font-medium text-primary-foreground shadow-glow transition hover:opacity-90">
             Open vault
           </a>
@@ -156,7 +170,84 @@ function Nav({ isAuthenticated, user, onLogout }: { isAuthenticated: boolean; us
             </>
           )}
         </div>
+
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="lg:hidden p-2 rounded-lg hover:bg-accent transition-colors"
+        >
+          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden border-t bg-background/95 backdrop-blur-sm">
+          <nav className="flex flex-col px-4 py-4 space-y-3">
+            <a href="#pillars" className="text-sm text-muted-foreground hover:text-foreground" onClick={() => setMobileMenuOpen(false)}>
+              Platform
+            </a>
+            <a href="#dashboard" className="text-sm text-muted-foreground hover:text-foreground" onClick={() => setMobileMenuOpen(false)}>
+              Dashboard
+            </a>
+            <a href="#behavior" className="text-sm text-muted-foreground hover:text-foreground" onClick={() => setMobileMenuOpen(false)}>
+              Behavior Engine
+            </a>
+            <a href="#fraud" className="text-sm text-muted-foreground hover:text-foreground" onClick={() => setMobileMenuOpen(false)}>
+              Fraud Detection
+            </a>
+            <a href="#security" className="text-sm text-muted-foreground hover:text-foreground" onClick={() => setMobileMenuOpen(false)}>
+              Security
+            </a>
+            <a href="#ethics" className="text-sm text-muted-foreground hover:text-foreground" onClick={() => setMobileMenuOpen(false)}>
+              Ethics
+            </a>
+            {isAuthenticated && (
+              <Link to="/profile" className="text-sm text-muted-foreground hover:text-foreground" onClick={() => setMobileMenuOpen(false)}>
+                Profile
+              </Link>
+            )}
+            <div className="pt-3 border-t space-y-2">
+              <a href="#dashboard" className="block text-center rounded-full bg-shield px-4 py-2 text-sm font-medium text-primary-foreground shadow-glow transition hover:opacity-90">
+                Open vault
+              </a>
+              {isAuthenticated ? (
+                <>
+                  <div className="text-center text-xs text-muted-foreground">
+                    Hi, {user?.name || "User"}
+                  </div>
+                  <button
+                    onClick={() => {
+                      onLogout();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition hover:bg-accent"
+                  >
+                    Sign out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="block text-center rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition hover:bg-accent"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Sign in
+                  </Link>
+                  <Link
+                    to="/signup"
+                    className="block text-center rounded-full bg-shield px-4 py-2 text-sm font-medium text-primary-foreground shadow-glow transition hover:opacity-90"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Get started
+                  </Link>
+                </>
+              )}
+            </div>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }

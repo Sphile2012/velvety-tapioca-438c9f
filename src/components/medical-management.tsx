@@ -49,7 +49,7 @@ export function MedicalManagement() {
     try {
       // Simulated user ID - in production, this would come from auth context
       const userId = "user-1";
-      
+
       const [appointmentsData, medicationsData, treatmentPlansData, chronicConditionsData] = await Promise.all([
         serverGetMedicalAppointments(userId),
         serverGetMedications(userId),
@@ -133,61 +133,62 @@ export function MedicalManagement() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b">
+      <div className="flex gap-2 border-b overflow-x-auto">
         <button
           onClick={() => setActiveTab("appointments")}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === "appointments"
-              ? "text-primary border-b-2 border-primary"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
+          className={`px-3 sm:px-4 py-2 font-medium transition-colors whitespace-nowrap ${activeTab === "appointments"
+            ? "text-primary border-b-2 border-primary"
+            : "text-muted-foreground hover:text-foreground"
+            }`}
         >
           <Calendar className="w-4 h-4 inline mr-2" />
-          Appointments
+          <span className="hidden sm:inline">Appointments</span>
+          <span className="sm:hidden">Appts</span>
         </button>
         <button
           onClick={() => setActiveTab("medications")}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === "medications"
-              ? "text-primary border-b-2 border-primary"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
+          className={`px-3 sm:px-4 py-2 font-medium transition-colors whitespace-nowrap ${activeTab === "medications"
+            ? "text-primary border-b-2 border-primary"
+            : "text-muted-foreground hover:text-foreground"
+            }`}
         >
           <Pill className="w-4 h-4 inline mr-2" />
-          Medications
+          <span className="hidden sm:inline">Medications</span>
+          <span className="sm:hidden">Meds</span>
         </button>
         <button
           onClick={() => setActiveTab("treatment")}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === "treatment"
-              ? "text-primary border-b-2 border-primary"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
+          className={`px-3 sm:px-4 py-2 font-medium transition-colors whitespace-nowrap ${activeTab === "treatment"
+            ? "text-primary border-b-2 border-primary"
+            : "text-muted-foreground hover:text-foreground"
+            }`}
         >
           <ClipboardList className="w-4 h-4 inline mr-2" />
-          Treatment Plans
+          <span className="hidden sm:inline">Treatment Plans</span>
+          <span className="sm:hidden">Plans</span>
         </button>
         <button
           onClick={() => setActiveTab("conditions")}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === "conditions"
-              ? "text-primary border-b-2 border-primary"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
+          className={`px-3 sm:px-4 py-2 font-medium transition-colors whitespace-nowrap ${activeTab === "conditions"
+            ? "text-primary border-b-2 border-primary"
+            : "text-muted-foreground hover:text-foreground"
+            }`}
         >
           <Heart className="w-4 h-4 inline mr-2" />
-          Conditions
+          <span className="hidden sm:inline">Conditions</span>
+          <span className="sm:hidden">Cond</span>
         </button>
       </div>
 
       {/* Appointments Tab */}
       {activeTab === "appointments" && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h3 className="text-lg font-semibold">Upcoming Appointments</h3>
-            <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
+            <button className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors w-full sm:w-auto">
               <Plus className="w-4 h-4" />
-              Schedule Appointment
+              <span className="hidden sm:inline">Schedule Appointment</span>
+              <span className="sm:hidden">Schedule</span>
             </button>
           </div>
 
@@ -241,11 +242,12 @@ export function MedicalManagement() {
       {/* Medications Tab */}
       {activeTab === "medications" && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h3 className="text-lg font-semibold">Active Medications</h3>
-            <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
+            <button className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors w-full sm:w-auto">
               <Plus className="w-4 h-4" />
-              Add Medication
+              <span className="hidden sm:inline">Add Medication</span>
+              <span className="sm:hidden">Add Med</span>
             </button>
           </div>
 
@@ -313,13 +315,12 @@ export function MedicalManagement() {
               {reminders.map((reminder) => (
                 <div
                   key={reminder.id}
-                  className={`p-4 rounded-lg border-2 ${
-                    reminder.taken
-                      ? "text-green-600 bg-green-50 border-green-200"
-                      : reminder.skipped
+                  className={`p-4 rounded-lg border-2 ${reminder.taken
+                    ? "text-green-600 bg-green-50 border-green-200"
+                    : reminder.skipped
                       ? "text-red-600 bg-red-50 border-red-200"
                       : "text-gray-600 bg-gray-50 border-gray-200"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
