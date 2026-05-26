@@ -1,5 +1,6 @@
 [build]
-  command = "npm ci && npm run build"
+  # Use npm install in CI to avoid lockfile mismatch failures; regenerate lockfile locally when possible
+  command = "npm install && npm run build"
   publish = "dist/client"
 
 [build.environment]
