@@ -1,39 +1,30 @@
 import { Handler } from "@netlify/functions";
-import fs from "fs";
-import path from "path";
 
+// This function forwards analytics payloads to a real backend when configured.
+// Set ANALYTICS_URL environment variable to your backend endpoint.
 export const handler: Handler = async (event) => {
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
 
+  const backend = process.env.ANALYTICS_URL || "http://localhost:4000/analytics";
+
   try {
-    const payload = event.body ? JSON.parse(event.body) : {};
+    // Forward the payload to the configured backend (best-effort)
+    const resp = await fetch(backend, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: event.body,
+    });
 
-    const storePath = path.join(process.cwd(), "analytics-store.json");
-
-    let store: any[] = [];
-    try {
-      if (fs.existsSync(storePath)) {
-        const raw = fs.readFileSync(storePath, "utf8");
-        store = raw ? JSON.parse(raw) : [];
-      }
-    } catch (e) {
-      console.warn("Failed to read analytics store", e);
-      store = [];
+    if (!resp.ok) {
+      console.warn("Analytics backend returned non-OK", resp.status);
+      return { statusCode: 502, body: JSON.stringify({ ok: false, status: resp.status }) };
     }
 
-    store.push({ ...payload, receivedAt: new Date().toISOString() });
-    try {
-      fs.writeFileSync(storePath, JSON.stringify(store, null, 2));
-    } catch (e) {
-      console.warn("Failed to write analytics store", e);
-    }
-
-    console.log("Analytics recorded:", payload);
     return { statusCode: 200, body: JSON.stringify({ ok: true }) };
   } catch (err: any) {
-    console.error("Analytics handler error", err);
+    console.error("Analytics handler forward error", err);
     return { statusCode: 500, body: JSON.stringify({ ok: false, error: String(err) }) };
   }
 };
