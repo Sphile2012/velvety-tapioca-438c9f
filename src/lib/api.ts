@@ -1,5 +1,38 @@
 // Backend API functions for Aegis Health
 
+// Backend API configuration
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+
+// Helper function for API calls
+async function apiCall(endpoint: string, options: RequestInit = {}) {
+  const url = `${API_BASE_URL}${endpoint}`;
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`API call failed: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+// Fallback to localStorage if backend is unavailable
+function useLocalStorage(key: string, data: any) {
+  if (typeof window !== "undefined") {
+    if (data !== undefined) {
+      window.localStorage.setItem(key, JSON.stringify(data));
+    }
+    const stored = window.localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : null;
+  }
+  return null;
+}
+
 export interface HealthData {
   userId: string;
   timestamp: string;
@@ -1370,7 +1403,6 @@ export async function getConnectedDevices(userId: string): Promise<ConnectedDevi
     },
   ];
 }
-
 export async function generatePersonalizedPlan(profile: UserProfile): Promise<{
   fitnessPlan: string;
   nutritionPlan: string;
