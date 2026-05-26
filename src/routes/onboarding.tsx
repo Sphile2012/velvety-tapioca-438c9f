@@ -5,6 +5,18 @@ import { saveUserProfile, saveOnboardingProgress, generatePersonalizedPlan, conn
 import { useAuth } from "@/contexts/auth-context";
 import { toast } from "sonner";
 
+// Type declarations for Web Bluetooth API
+declare global {
+  interface Navigator {
+    bluetooth?: {
+      requestDevice(options: {
+        acceptAllDevices?: boolean;
+        optionalServices?: string[];
+      }): Promise<any>;
+    };
+  }
+}
+
 export const Route = createFileRoute("/onboarding")({
   component: Onboarding,
 });
@@ -231,6 +243,7 @@ function Onboarding() {
           model: bluetoothDevice.id,
           isActive: true,
           dataTypes: ["heart_rate", "steps", "sleep"],
+          connectionMethod: "bluetooth",
         };
       } else if (method === "qr") {
         devicePayload = {
@@ -240,6 +253,7 @@ function Onboarding() {
           model: "QR-DEVICE-001",
           isActive: true,
           dataTypes: ["steps", "heart_rate"],
+          connectionMethod: "qr_code",
         };
       } else {
         devicePayload = {
@@ -249,6 +263,7 @@ function Onboarding() {
           model: "MOBILE-APP-001",
           isActive: true,
           dataTypes: ["steps", "sleep", "heart_rate"],
+          connectionMethod: "cellphone_app",
         };
       }
 
@@ -749,44 +764,39 @@ function Onboarding() {
         {/* Form Card */}
         <div className="rounded-2xl sm:rounded-3xl border border-border bg-card/80 backdrop-blur-sm p-6 sm:p-8 shadow-card">
           {renderStep()}
+        </div>
 
-          {/* Navigation Buttons */}
-          <div className="flex items-center justify-between mt-8 pt-6 border-t border-border">
-            {currentStep > 1 ? (
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-card text-foreground hover:bg-accent transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Back
-              </button>
-            ) : (
-              <div />
-            )}
-
+        {/* Navigation Buttons - Completely outside */}
+        <div className="flex items-center justify-between mt-6 pt-6 border-t border-border">
+          {currentStep > 1 ? (
             <button
-              type="button"
-              aria-label={currentStep === totalSteps ? "Complete onboarding" : "Next step"}
-              onClick={(e) => {
-                e.preventDefault();
-                if (!isLoading) handleNext();
-              }}
-              disabled={isLoading}
-              className="relative z-30 pointer-events-auto flex items-center gap-2 px-6 py-2 rounded-xl bg-shield text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              onClick={handleBack}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-card text-foreground hover:bg-accent transition-colors"
             >
-              {isLoading ? (
-                "Processing..."
-              ) : currentStep === totalSteps ? (
-                <>
-                  Complete <CheckCircle className="w-4 h-4" />
-                </>
-              ) : (
-                <>
-                  Next <ChevronRight className="w-4 h-4" />
-                </>
-              )}
+              <ChevronLeft className="w-4 h-4" />
+              Back
             </button>
-          </div>
+          ) : (
+            <div />
+          )}
+
+          <button
+            onClick={handleNext}
+            disabled={isLoading}
+            className="flex items-center gap-2 px-6 py-2 rounded-xl bg-shield text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {isLoading ? (
+              "Processing..."
+            ) : currentStep === totalSteps ? (
+              <>
+                Complete <CheckCircle className="w-4 h-4" />
+              </>
+            ) : (
+              <>
+                Next <ChevronRight className="w-4 h-4" />
+              </>
+            )}
+          </button>
         </div>
 
         {/* Skip Option */}
