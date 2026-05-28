@@ -1320,7 +1320,7 @@ export async function saveUserProfile(profile: UserProfile): Promise<{ success: 
     }
 
     // Try Supabase if configured
-    if (isSupabaseConfigured()) {
+    if (isSupabaseConfigured() && supabase) {
       const { error } = await supabase
         .from('user_profiles')
         .upsert({
@@ -1353,7 +1353,7 @@ export async function saveUserProfile(profile: UserProfile): Promise<{ success: 
 
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   // Try Supabase if configured
-  if (isSupabaseConfigured()) {
+  if (isSupabaseConfigured() && supabase) {
     const { data, error } = await supabase
       .from('user_profiles')
       .select('*')
