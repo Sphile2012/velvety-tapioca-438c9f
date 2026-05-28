@@ -159,7 +159,7 @@ function Login() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-shield px-6 py-3 font-medium text-primary-foreground shadow-glow transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-shield px-4 sm:px-6 py-3 font-medium text-primary-foreground shadow-glow transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>Signing in...</>
@@ -186,7 +186,7 @@ function Login() {
           {/* Signup Link */}
           <button
             onClick={() => navigate({ to: "/signup" })}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-6 py-3 font-medium text-foreground transition-all hover:bg-accent"
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 sm:px-6 py-3 font-medium text-foreground transition-all hover:bg-accent"
           >
             <User className="w-4 h-4" />
             Create account

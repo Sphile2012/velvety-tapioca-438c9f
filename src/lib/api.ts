@@ -1,5 +1,7 @@
 // Backend API functions for Aegis Health
 
+import { supabase, isSupabaseConfigured } from './supabase';
+
 // Backend API configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -1311,14 +1313,34 @@ export async function serverGetContextAwareResponse(message: string, userContext
 
 // User Profile & Onboarding Functions
 export async function saveUserProfile(profile: UserProfile): Promise<{ success: boolean; error?: string }> {
-  // Simulated profile save - in production, this would save to database
   try {
     // Validate required fields
     if (!profile.userId || !profile.personalInfo.age || !profile.personalInfo.weight || !profile.personalInfo.height) {
       return { success: false, error: "Missing required personal information" };
     }
 
-    // Store in localStorage for demo
+    // Try Supabase if configured
+    if (isSupabaseConfigured()) {
+      const { error } = await supabase
+        .from('user_profiles')
+        .upsert({
+          user_id: profile.userId,
+          personal_info: profile.personalInfo,
+          fitness_goals: profile.fitnessGoals,
+          health_conditions: profile.healthConditions,
+          medications: profile.medications,
+          updated_at: new Date().toISOString()
+        });
+
+      if (error) {
+        console.error('Supabase error:', error);
+        // Fallback to localStorage
+      } else {
+        return { success: true };
+      }
+    }
+
+    // Fallback to localStorage
     if (typeof window !== "undefined") {
       localStorage.setItem(`user_profile_${profile.userId}`, JSON.stringify(profile));
     }
@@ -1330,7 +1352,26 @@ export async function saveUserProfile(profile: UserProfile): Promise<{ success: 
 }
 
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
-  // Simulated profile retrieval
+  // Try Supabase if configured
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (!error && data) {
+      return {
+        userId: data.user_id,
+        personalInfo: data.personal_info,
+        fitnessGoals: data.fitness_goals,
+        healthConditions: data.health_conditions,
+        medications: data.medications,
+      } as UserProfile;
+    }
+  }
+
+  // Fallback to localStorage
   if (typeof window !== "undefined") {
     const stored = localStorage.getItem(`user_profile_${userId}`);
     if (stored) {

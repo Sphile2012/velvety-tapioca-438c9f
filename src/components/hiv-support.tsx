@@ -50,7 +50,7 @@ export function HIVSupport() {
     setLoading(true);
     try {
       const userId = "user-1";
-      
+
       const [healthData, counselingData, wellnessData, remindersData, resourcesData, guidanceData] = await Promise.all([
         serverGetHIVHealthRecord(userId),
         serverGetCounselingSessions(userId),
@@ -106,7 +106,8 @@ export function HIVSupport() {
             className="flex items-center gap-2 px-3 py-2 rounded-lg border hover:bg-accent transition-colors"
           >
             {showSensitiveData ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            <span className="text-sm">{showSensitiveData ? "Hide" : "Show"} Details</span>
+            <span className="text-sm hidden sm:inline">{showSensitiveData ? "Hide" : "Show"} Details</span>
+            <span className="text-sm sm:hidden">{showSensitiveData ? "Hide" : "Show"}</span>
           </button>
         </div>
       </div>
@@ -128,44 +129,40 @@ export function HIVSupport() {
       <div className="flex gap-2 border-b">
         <button
           onClick={() => setActiveTab("health")}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === "health"
+          className={`px-4 py-2 font-medium transition-colors ${activeTab === "health"
               ? "text-primary border-b-2 border-primary"
               : "text-muted-foreground hover:text-foreground"
-          }`}
+            }`}
         >
           <Heart className="w-4 h-4 inline mr-2" />
           Health Record
         </button>
         <button
           onClick={() => setActiveTab("counseling")}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === "counseling"
+          className={`px-4 py-2 font-medium transition-colors ${activeTab === "counseling"
               ? "text-primary border-b-2 border-primary"
               : "text-muted-foreground hover:text-foreground"
-          }`}
+            }`}
         >
           <MessageCircle className="w-4 h-4 inline mr-2" />
           Counseling
         </button>
         <button
           onClick={() => setActiveTab("wellness")}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === "wellness"
+          className={`px-4 py-2 font-medium transition-colors ${activeTab === "wellness"
               ? "text-primary border-b-2 border-primary"
               : "text-muted-foreground hover:text-foreground"
-          }`}
+            }`}
         >
           <Activity className="w-4 h-4 inline mr-2" />
           Wellness
         </button>
         <button
           onClick={() => setActiveTab("resources")}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === "resources"
+          className={`px-4 py-2 font-medium transition-colors ${activeTab === "resources"
               ? "text-primary border-b-2 border-primary"
               : "text-muted-foreground hover:text-foreground"
-          }`}
+            }`}
         >
           <Phone className="w-4 h-4 inline mr-2" />
           Resources
@@ -333,13 +330,12 @@ export function HIVSupport() {
               {reminders.map((reminder) => (
                 <div
                   key={reminder.id}
-                  className={`p-4 rounded-lg border-2 ${
-                    reminder.taken
+                  className={`p-4 rounded-lg border-2 ${reminder.taken
                       ? "text-green-600 bg-green-50 border-green-200"
                       : reminder.skipped
-                      ? "text-red-600 bg-red-50 border-red-200"
-                      : "text-gray-600 bg-gray-50 border-gray-200"
-                  }`}
+                        ? "text-red-600 bg-red-50 border-red-200"
+                        : "text-gray-600 bg-gray-50 border-gray-200"
+                    }`}
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-3">

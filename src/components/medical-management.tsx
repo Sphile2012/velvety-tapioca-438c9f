@@ -360,11 +360,12 @@ export function MedicalManagement() {
       {/* Treatment Plans Tab */}
       {activeTab === "treatment" && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h3 className="text-lg font-semibold">Active Treatment Plans</h3>
-            <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
+            <button className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors w-full sm:w-auto">
               <Plus className="w-4 h-4" />
-              Create Plan
+              <span className="hidden sm:inline">Create Plan</span>
+              <span className="sm:hidden">Create</span>
             </button>
           </div>
 
@@ -447,11 +448,12 @@ export function MedicalManagement() {
       {/* Conditions Tab */}
       {activeTab === "conditions" && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h3 className="text-lg font-semibold">Chronic Conditions</h3>
-            <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
+            <button className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors w-full sm:w-auto">
               <Plus className="w-4 h-4" />
-              Add Condition
+              <span className="hidden sm:inline">Add Condition</span>
+              <span className="sm:hidden">Add</span>
             </button>
           </div>
 

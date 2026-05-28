@@ -128,10 +128,10 @@ function Profile() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 px-4 py-8 sm:py-12">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8">
           <button
             onClick={() => navigate({ to: "/" })}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-card text-foreground hover:bg-accent transition-colors"
+            className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-border bg-card text-foreground hover:bg-accent transition-colors w-full sm:w-auto"
           >
             <ChevronLeft className="w-4 h-4" />
             Back to Dashboard
@@ -419,7 +419,7 @@ function Profile() {
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-shield text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-xl bg-shield text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors w-full sm:w-auto"
           >
             {isSaving ? (
               "Saving..."

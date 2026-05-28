@@ -581,7 +581,7 @@ function Onboarding() {
                 type="button"
                 onClick={() => handleConnectDevice("bluetooth")}
                 disabled={isScanning || !bluetoothAvailable}
-                className="group flex flex-col items-center justify-center gap-3 rounded-3xl border border-border bg-background p-5 text-center transition hover:border-primary/70 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
+                className="group flex flex-col items-center justify-center gap-3 rounded-3xl border border-border bg-background p-4 sm:p-5 text-center transition hover:border-primary/70 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Watch className="w-6 h-6 text-primary transition group-hover:text-primary" />
                 <span className="text-sm font-semibold text-foreground">Bluetooth</span>
@@ -592,7 +592,7 @@ function Onboarding() {
                 type="button"
                 onClick={() => handleConnectDevice("qr")}
                 disabled={isScanning}
-                className="group flex flex-col items-center justify-center gap-3 rounded-3xl border border-border bg-background p-5 text-center transition hover:border-primary/70 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
+                className="group flex flex-col items-center justify-center gap-3 rounded-3xl border border-border bg-background p-4 sm:p-5 text-center transition hover:border-primary/70 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                   <span className="text-lg">📷</span>
@@ -605,7 +605,7 @@ function Onboarding() {
                 type="button"
                 onClick={() => handleConnectDevice("phone")}
                 disabled={isScanning}
-                className="group flex flex-col items-center justify-center gap-3 rounded-3xl border border-border bg-background p-5 text-center transition hover:border-primary/70 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
+                className="group flex flex-col items-center justify-center gap-3 rounded-3xl border border-border bg-background p-4 sm:p-5 text-center transition hover:border-primary/70 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                   <span className="text-lg">📱</span>
@@ -771,7 +771,7 @@ function Onboarding() {
           {currentStep > 1 ? (
             <button
               onClick={handleBack}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-card text-foreground hover:bg-accent transition-colors"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl border border-border bg-card text-foreground hover:bg-accent transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
               Back
@@ -783,7 +783,7 @@ function Onboarding() {
           <button
             onClick={handleNext}
             disabled={isLoading}
-            className="flex items-center gap-2 px-6 py-2 rounded-xl bg-shield text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-2 px-4 sm:px-6 py-2 rounded-xl bg-shield text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? (
               "Processing..."
